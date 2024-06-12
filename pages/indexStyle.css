@@ -97,6 +97,38 @@ nav {
     margin-left: 10px;
 }
 
+.filter-section {
+    margin-bottom: 20px; 
+    margin-top: 15px;
+    margin-left: 20px;
+}
+
+.filter-section h3 {
+    font-size: 18px; /* Size of the heading */
+    margin-bottom: 10px; /* Space below heading */
+    color: #b3b3b3;
+}
+
+.filter-section ul {
+    list-style: none; /* Removes bullet points */
+    padding: 0; /* Removes padding */
+}
+
+.filter-section ul li {
+    margin-bottom: 10px; /* Space between list items */
+    display: flex; /* Align checkbox and label */
+    align-items: center; /* Vertically center */
+}
+
+.filter-section ul li input[type="checkbox"] {
+    margin-right: 10px; /* Space between checkbox and label */
+}
+
+.filter-section ul li label {
+    font-size: 16px; /* Label font size */
+    color: #626262; /* Label color */
+}
+
 .main-content {
     flex-basis: 50%;
     margin-right: 150px;
