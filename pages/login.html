@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/static/style.css">
     <title>Forum</title>
 </head>
 <body>
@@ -14,21 +14,21 @@
                 <button type="button" class="toggle-btn" onclick="login()">Log In</button>
                 <button type="button" class="toggle-btn" onclick="register()">Register</button>
             </div>
-            <form id="login" class="input-group">
-                <input type="text" class="input-field" placeholder="User ID" required>
-                <input type="password" class="input-field" placeholder="Enter password" required>
+            <form id="login" class="input-group" action="/login" method="post">
+                <input type="text" class="input-field" placeholder="User ID" name="user_id" required>
+                <input type="password" class="input-field" placeholder="Enter password" name="password" required>
                 <input type="checkbox" class="checkbox"><span>Remember password</span>
                 <button type="submit" class="submit-btn">Log in</button>
             </form>
-            <form id="register" class="input-group">
-                <input type="text" class="input-field" placeholder="User ID" required>
-                <input type="email" class="input-field" placeholder="Enter Email" required>
-                <input type="password" class="input-field" placeholder="Enter password" required>
+            <form id="register" class="input-group" action="/login" method="post">
+                <input type="text" class="input-field" placeholder="User ID" name="user_id" required>
+                <input type="email" class="input-field" placeholder="Enter Email" name="email" required>
+                <input type="password" class="input-field" placeholder="Enter password" name="password" required>
                 <input type="checkbox" class="checkbox"><span>Agree to terms and conditions</span>
                 <button type="submit" class="submit-btn">Register</button>
             </form>
         </div>
     </div>
-    <script src="script.js"></script>
 </body>
+<script src="/static/script.js"></script>
 </html>
