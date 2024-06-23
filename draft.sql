@@ -20,7 +20,7 @@ CREATE TABLE Post (
     Content         TEXT NOT NULL,
     CreatedDate     DATETIME DEFAULT CURRENT_TIMESTAMP,
     UserID          INTEGER,
-    CategoryID      INTEGER,
+    -- CategoryID      INTEGER,
     FOREIGN KEY (UserID) REFERENCES User(UserID),
     FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
 );
