@@ -1,12 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"path/filepath"
 )
 
 func main() {
+	database, dbErr := sql.Open("sqlite3", "./database.db")
+
+	if dbErr != nil {
+		log.Fatal("Error opening database:", dbErr)
+	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/login", loginHandler)
