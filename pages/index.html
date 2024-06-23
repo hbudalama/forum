@@ -65,7 +65,7 @@
                     <div class="user-profile">
                         <img src="/static/images/user.png">
                         <div>
-                            <p>User Name</p>
+                            <p>{{ user.userName }}</p>
                         </div>
                     </div>
                     <div class="post-input-container">
@@ -96,8 +96,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="post-text">post content post content post content post content post content post content
-                    </p>
+                    <p class="post-text"> {{ post.Title }} </p>
                     <div class="post-row">
                         <div class="activity-icons">
                             <div><i class="fa fa-thumbs-up icon"></i>#likes</div>

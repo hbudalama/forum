@@ -31,7 +31,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 		return
 	}
-
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
