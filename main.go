@@ -8,12 +8,6 @@ import (
 )
 
 func main() {
-	database, dbErr := sql.Open("sqlite3", "./database.db")
-
-	if dbErr != nil {
-		log.Fatal("Error opening database:", dbErr)
-	}
-
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/login", loginHandler)
@@ -41,6 +35,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	postsData, _ := sql.Open("sqlite3", "./database.db")
+
+	posts, _ := postsData.Query(
+		"SELECT Title FROM posts",
+	)
+
 	if r.Method == http.MethodGet {
 		http.ServeFile(w, r, filepath.Join("pages", "index.html"))
 		return
