@@ -2,51 +2,30 @@ package main
 
 import (
 	// "database/sql"
+	// "log"
 	"log"
 	"net/http"
-	"path/filepath"
+
+	"learn.reboot01.com/git/hbudalam/forum/pkg/server"
 )
 
 func main() {
-    // server := NewAPIServer(":8080")
-    // server.Run()
-    mux := http.NewServeMux()
-    mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-    mux.HandleFunc("/login", loginHandler)
-    // mux.HandleFunc("/api/posts/{id}/comments", )
-    // mux.HandleFunc("/api/posts", )
-    // mux.HandleFunc("/api/posts/{id}", )
-    // mux.HandleFunc("/api/posts/{id}/dislike", )
-    // mux.HandleFunc("/api/posts/{id}/like", )
-    // mux.HandleFunc("/api/categories", )
-    // mux.HandleFunc("signup", )
-    mux.HandleFunc("/", homeHandler)
-    // http://localhost:8080/login
-    log.Println("Serving on http://localhost:8080")
-    err := http.ListenAndServe(":8080", mux)
-    if err != nil {
-        log.Println("Error starting server:", err)
-    }
-}
+	mux := http.NewServeMux()
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, filepath.Join("pages", "login.html"))
-		return
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	mux.HandleFunc("/login", server.LoginHandler)
+	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler)
+	mux.HandleFunc("/api/posts", server.AddPostsHandler)
+	mux.HandleFunc("/api/posts/{id}", server.GetPostsHandler)
+	mux.HandleFunc("/api/posts/{id}/dislike", server.AddDislikesHandler)
+	mux.HandleFunc("/api/posts/{id}/like", server.AddLikesHandler)
+	mux.HandleFunc("/api/categories", server.GetCategoriesHandler)
+	mux.HandleFunc("signup", server.SignupHandler)
+	mux.HandleFunc("/", server.HomeHandler)
+
+	log.Println("Serving on http://localhost:8080")
+	err := http.ListenAndServe(":8080", mux)
+	if err != nil {
+		log.Println("Error starting server:", err)
 	}
-}
-
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	// postsData, _ := sql.Open("sqlite3", "./database.db")
-
-	// posts, _ := postsData.Query(
-	// 	"SELECT Title FROM posts",
-	// )
-
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, filepath.Join("pages", "index.html"))
-		return
-	}
-
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }
