@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS User (
-    UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
-    Username            TEXT NOT NULL UNIQUE,
-    FirstName           TEXT,
-    LastName            TEXT,
-    Email               TEXT NOT NULL UNIQUE,
-    Password            TEXT NOT NULL,
-    SessionToken        TEXT,
-    SessionExpiration   DATETIME
+    -- UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
+    username            TEXT NOT NULL UNIQUE,
+    -- FirstName           TEXT,
+    -- LastName            TEXT,
+    email               TEXT NOT NULL UNIQUE,
+    password            TEXT NOT NULL,
+    sessionToken        TEXT,
+    sessionExpiration   DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS Category (
