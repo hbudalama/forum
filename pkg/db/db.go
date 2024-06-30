@@ -2,12 +2,15 @@ package db
 
 import (
 	"database/sql"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
+
+var dbMutex = sync.Mutex{}
 
 func Connect() error {
 	database, err := sql.Open("sqlite3", "database.db")

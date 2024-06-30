@@ -11,6 +11,8 @@ import (
 
 func AddUser(username string, email string, hashedPassword string) (*structs.User, error) {
 	// Insert user into the database
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	_, err := db.Exec("INSERT INTO user (username, email, password) VALUES ($1, $2, $3)", username, email, hashedPassword)
 	if err != nil {
 		log.Printf("AddUser: %s\n", err.Error())

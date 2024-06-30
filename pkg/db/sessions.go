@@ -12,7 +12,8 @@ import (
 func CreateSession(username string) (string, error) {
 	token := uuid.New().String()
 	expiry := time.Now().Add(24 * time.Hour)
-
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	_, err := db.Exec("UPDATE User SET sessionToken = ?, sessionExpiration = ? WHERE username = ?", token, expiry, username)
 	if err != nil {
 		return "", err
@@ -35,6 +36,8 @@ func GetSession(token string) (*structs.Session, error) {
 }
 
 func DeleteSession(token string) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	_, err := db.Exec("UPDATE User SET sessionToken = NULL, sessionExpiration = NULL WHERE sessionToken = ?", token)
 	return err
 }
