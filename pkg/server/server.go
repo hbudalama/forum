@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -84,6 +85,7 @@ func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
 func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 }
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// if LoginGuard(r) {
 	// 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -94,8 +96,39 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method == "POST" {
+		username := r.FormValue("user_id")
+		password := r.FormValue("password")
+
+		exists, err := db.CheckUsernameExists(username)
+		if err != nil {
+			log.Printf("LoginHandler: Error checking username: %s\n", err.Error())
+			http.Error(w, "Server error0", http.StatusInternalServerError)
+			return
+		}
+
+		if !exists {
+			http.Error(w, "Username not found", http.StatusUnauthorized)
+			return
+		}
+
+		passwordMatches, err := db.CheckPassword(username, password)
+		if err != nil {
+			log.Printf("LoginHandler: Error checking password: %s\n", err.Error())
+			http.Error(w, "Server error1", http.StatusInternalServerError)
+			return
+		}
+
+		if !passwordMatches {
+			http.Error(w, "Invalid password", http.StatusUnauthorized)
+			return
+		}
+
+	}
+
 	http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 }
+
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if !MethodsGuard(w, r, "GET") {

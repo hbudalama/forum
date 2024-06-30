@@ -3,10 +3,10 @@ package structs
 import "time"
 
 type User struct{
-	ID int
+	// ID int
 	Username string 
-	FirstName string
-	LastName string
+	// FirstName string
+	// LastName string
 	Email string
 }
 
