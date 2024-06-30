@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS User (
     -- UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
-    username            TEXT NOT NULL UNIQUE,
+    username            TEXT PRIMARY KEY,
     -- FirstName           TEXT,
     -- LastName            TEXT,
     email               TEXT NOT NULL UNIQUE,
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS Post (
     Title           TEXT NOT NULL,
     Content         TEXT NOT NULL,
     CreatedDate     DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UserID          INTEGER,
-    FOREIGN KEY (UserID) REFERENCES User(UserID)
+    username        TEXT,
+    FOREIGN KEY (username) REFERENCES User(username)
 );
 
 CREATE TABLE IF NOT EXISTS Comment (
@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS Comment (
     Content         TEXT NOT NULL,
     CreatedDate     DATETIME DEFAULT CURRENT_TIMESTAMP,
     PostID          INTEGER,
-    UserID          INTEGER,
+    username        TEXT,
     FOREIGN KEY (PostID) REFERENCES Post(PostID),
-    FOREIGN KEY (UserID) REFERENCES User(UserID)
+    FOREIGN KEY (username) REFERENCES User(username)
 );
 
 CREATE TABLE IF NOT EXISTS PostCategory (
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS PostCategory (
 CREATE TABLE IF NOT EXISTS Interaction (
     InteractionID   INTEGER PRIMARY KEY AUTOINCREMENT,
     PostID          INTEGER,
-    UserID          INTEGER,
+    username        TEXT,
     Kind            INTEGER NOT NULL CHECK (Kind IN (0, 1)), -- 1 for like, 0 for dislike
     FOREIGN KEY (PostID) REFERENCES Post(PostID),
-    FOREIGN KEY (UserID) REFERENCES User(UserID)
+    FOREIGN KEY (username) REFERENCES User(username)
 );
