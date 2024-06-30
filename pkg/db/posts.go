@@ -95,3 +95,17 @@ func Interact(post int, username string, interaction int) error {
 
 	return nil
 }
+
+func AddComment(post int, username string, comment string) error {
+	if !postExists(post) {
+		return errors.New("post does not exist")
+	}
+
+	_, err := db.Exec("INSERT INTO comments (PostID, Username, Comment) VALUES ($1, $2, $3)", post, username, comment)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
