@@ -2,6 +2,22 @@ package db
 
 import "errors"
 
+/*
+type User struct{
+	Username string
+	Email string
+}
+type Post struct{
+	ID int
+	Title string
+	Content string
+	CreatedDate time.Time
+	UserID *User
+	Categories []string
+	Interactions []Interaction
+}
+*/
+
 // this function will be reused in the functions below
 func postExists(id int) bool {
 	var status bool
@@ -26,17 +42,19 @@ func userExists(username string) bool {
 }
 
 func isOwner(post int, username string) bool {
-	if !postExists(post) || !userExists(username) {
-		return false
-	}
 	if username == "" || post < 1 {
 		return false
 	}
-	var owner bool
 
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE ID = $1)", post).Scan(&owner)
+	if !postExists(post) || !userExists(username) {
+		return false
+	}
 
-	return false //default
+	var status bool
+
+	//TO DO: db.QueryRow
+
+	return status
 }
 
 func CreatePost(title string, content string, username string) error {
@@ -49,8 +67,8 @@ func CreatePost(title string, content string, username string) error {
 	return nil
 }
 
-func DeletePost(id int) error {
-	if !postExists(id) {
+func DeletePost(id int, user string) error {
+	if !postExists(id) || !isOwner(id, user) {
 		return errors.New("post does not exist")
 	}
 	_, err := db.Exec("DELETE FROM posts WHERE ID = $1", id)
@@ -63,8 +81,12 @@ func DeletePost(id int) error {
 }
 
 func Interact(post int, username string, interaction int) error {
-	//TO DO: Check if the post exists
+	if !postExists(post) || !userExists(username) {
+		return errors.New("post does not exist")
+	}
+
 	//TO DO: Check if the user didn't already interact with the post
+
 	_, err := db.Exec("INSERT INTO interactions (PostID, Username, Interaction) VALUES ($1, $2, $3)", post, username, interaction)
 
 	if err != nil {
@@ -72,21 +94,4 @@ func Interact(post int, username string, interaction int) error {
 	}
 
 	return nil
-
 }
-
-/*
-type User struct{
-	Username string
-	Email string
-}
-type Post struct{
-	ID int
-	Title string
-	Content string
-	CreatedDate time.Time
-	UserID *User
-	Categories []string
-	Interactions []Interaction
-}
-*/
