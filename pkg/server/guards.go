@@ -3,9 +3,29 @@ package server
 import (
 	"net/http"
 	"strings"
+	"time"
+
+	"learn.reboot01.com/git/hbudalam/forum/pkg/db"
 )
 
-func LoginGuard(r *http.Request) bool {
+func LoginGuard(w http.ResponseWriter, r *http.Request) bool {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		return false
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil || session == nil {
+		return false
+	}
+
+	if session.Expiry.Before(time.Now()) {
+		db.DeleteSession(token)
+		return false
+	}
+
 	return true
 }
 

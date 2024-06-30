@@ -22,7 +22,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	mux.HandleFunc("/login", server.LoginHandler) // 🏗️
+	mux.HandleFunc("/login", server.LoginHandler) // ✅
 	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler)
 	mux.HandleFunc("/api/posts", server.AddPostsHandler)
 	mux.HandleFunc("/api/posts/{id}", server.GetPostsHandler)
