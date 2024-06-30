@@ -24,6 +24,8 @@ func CreateSession(username string) (string, error) {
 
 func GetSession(token string) (*structs.Session, error) {
 	var session structs.Session
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	err := db.QueryRow("SELECT sessionToken, sessionExpiration, username FROM User WHERE sessionToken = ?", token).Scan(&session.Token, &session.Expiry, &session.User.Username)
 	if err != nil {
 		log.Printf("GetSession: %s\n", err.Error())

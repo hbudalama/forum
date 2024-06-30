@@ -27,7 +27,8 @@ func Close() error {
 
 func CheckUsernameExists(username string) (bool, error) {
 	var foundUsername string
-
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	err := db.QueryRow("SELECT username FROM user WHERE username = ?", username).Scan(&foundUsername)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -41,6 +42,8 @@ func CheckUsernameExists(username string) (bool, error) {
 
 func GetHashedPasswordByUsername(username string) (string, error) {
 	var hashedPassword string
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	err := db.QueryRow("SELECT password FROM user WHERE username = ?", username).Scan(&hashedPassword)
 	if err != nil {
 		if err == sql.ErrNoRows {
