@@ -20,7 +20,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }ß
 
-	username := r.FormValue("user_id")
+	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -32,8 +32,19 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error": "Email is required"}`, http.StatusBadRequest)
 		return
 	}
+
+	if !validEmail(email) {
+		http.Error(w, `{"error": "Invalid email format"}`, http.StatusBadRequest)
+		return
+	}
+
 	if strings.TrimSpace(password) == "" {
 		http.Error(w, `{"error": "Password is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	if !validatePassword(password) {
+		http.Error(w, `{"error": "Password must be at least 8 characters long and must not contain spaces"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -97,7 +108,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		username := r.FormValue("user_id")
+		username := r.FormValue("username")
 		password := r.FormValue("password")
 
 		exists, err := db.CheckUsernameExists(username)
@@ -136,4 +147,12 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, filepath.Join("pages", "index.html"))
+}
+
+func validEmail(email string) bool {
+	return strings.Contains(email, "@") && string.HasSuffix(email, ".com")
+}
+
+func validatePassword(password string) bool {
+	return len(password) == 8 && !strings.Contains(password, " ")
 }
