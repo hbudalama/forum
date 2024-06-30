@@ -43,7 +43,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !validatePassword(password) {
-		http.Error(w, `{"error": "Password must be at least 8 characters long and must not contain spaces"}`, http.StatusBadRequest)
+		http.Error(w, `{"error": "Password must be at least 8 characters long "}`, http.StatusBadRequest)
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -167,7 +167,5 @@ func validEmail(email string) bool {
 }
 
 func validatePassword(password string) bool {
-	return len(password) == 8 && !strings.Contains(password, " ")
+	return len(password) >= 8
 }
-
-
