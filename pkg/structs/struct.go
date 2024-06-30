@@ -39,3 +39,16 @@ type Session struct {
 	Expiry time.Time
 	User   User
 }
+
+type HomeContext struct {
+	LoggedInUser User
+	Categories   []string
+	Posts        []Post
+}
+
+type PostContext struct {
+	LoggedInUser User
+	Categories   []string
+	Post         Post
+	Comments     []Comment
+}
