@@ -42,7 +42,6 @@ type Session struct {
 
 type HomeContext struct {
 	LoggedInUser *User
-	Categories   []string
 	Posts        []Post
 }
 

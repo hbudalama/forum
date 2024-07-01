@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	"learn.reboot01.com/git/hbudalam/forum/pkg/db"
+	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 )
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
@@ -159,29 +161,41 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// var user structs.User
-	// if LoginGuard(w, r) {
-	// 	cookie, err := r.Cookie("session_token")
-	// 	if err != nil {
-	// 		log.Printf("cant get the cookie: %s\n", err.Error())
-	// 		return
-	// 	}
+	var user structs.User
+	if LoginGuard(w, r) {
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			log.Printf("can't get the cookie: %s\n", err.Error())
+			return
+		}
 
-	// 	token := cookie.Value
+		token := cookie.Value
 
-	// 	session, err := db.GetSession(token)
-	// 	if err != nil {
-	// 		log.Printf("cant get the cookie: %s\n", err.Error())
-	// 		return
-	// 	}
-	// 	// user = session.User
+		session, err := db.GetSession(token)
+		if err != nil {
+			log.Printf("can't get the session: %s\n", err.Error())
+			return
+		}
+		user = session.User
+	}
 
-	// }
+	posts := db.GetAllPosts()
 
-	// ctx := structs.HomeContext{user}
+	ctx := structs.HomeContext{LoggedInUser: &user, Posts: posts}
 
-	// fmt.Print(ctx)
-	http.ServeFile(w, r, filepath.Join("pages", "index.html"))
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, ctx)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func validEmail(email string) bool {

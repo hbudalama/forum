@@ -27,8 +27,11 @@
                         <img src="/static/images/user.png" class="profile-image">
                     </div>
                     <div class="dropdown-options">
-                        <a href="/login">Register/Login</a>
+                        {{if .LoggedInUser.Username}}
                         <a href="#">Logout</a>
+                        {{else}}
+                        <a href="/login">Register/Login</a>
+                        {{end}}
                     </div>
                 </div>
             </div>
@@ -65,7 +68,7 @@
                     <div class="user-profile">
                         <img src="/static/images/user.png">
                         <div>
-                            <p>{{ user.userName }}</p>
+                            <p>{{.LoggedInUser.Username}}</p>
                         </div>
                     </div>
                     <div class="post-input-container">
@@ -87,16 +90,17 @@
                         </div>
                     </div>
                 </div>
+                {{range .Posts}}
                 <div class="post">
                     <div class="post-row">
                         <div class="user-profile">
                             <img src="/static/images/user.png">
                             <div>
-                                <p>User Name</p>
+                                <p>{{.UserID.Username}}</p>
                             </div>
                         </div>
                     </div>
-                    <p class="post-text"> {{ post.Title }} </p>
+                    <p class="post-text">{{.Title}}</p>
                     <div class="post-row">
                         <div class="activity-icons">
                             <div><i class="fa fa-thumbs-up icon"></i>#likes</div>
@@ -108,6 +112,7 @@
                         </div>
                     </div>
                 </div>
+                {{end}}
                 <button type="button" class="load-more-button">Load more</button>
             </div>
             <!------------------------------right sidebar (commented out)--------------------------->

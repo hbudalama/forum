@@ -45,4 +45,3 @@ func GetUser(username string) (*structs.User, error) {
 
 	return &user, nil
 }
-
