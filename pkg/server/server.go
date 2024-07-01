@@ -63,7 +63,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CommentsHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 }
 
 func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -159,6 +159,28 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// var user structs.User
+	// if LoginGuard(w, r) {
+	// 	cookie, err := r.Cookie("session_token")
+	// 	if err != nil {
+	// 		log.Printf("cant get the cookie: %s\n", err.Error())
+	// 		return
+	// 	}
+
+	// 	token := cookie.Value
+
+	// 	session, err := db.GetSession(token)
+	// 	if err != nil {
+	// 		log.Printf("cant get the cookie: %s\n", err.Error())
+	// 		return
+	// 	}
+	// 	// user = session.User
+
+	// }
+
+	// ctx := structs.HomeContext{user}
+
+	// fmt.Print(ctx)
 	http.ServeFile(w, r, filepath.Join("pages", "index.html"))
 }
 

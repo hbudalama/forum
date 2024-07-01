@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"strings"
@@ -25,8 +26,23 @@ func AddUser(username string, email string, hashedPassword string) (*structs.Use
 			}
 		}
 
-		return nil, errors.New("internal server error")
+		return &structs.User{}, errors.New("internal server error")
 	}
 
 	return nil, nil
 }
+
+func GetUser(username string) (*structs.User, error) {
+	user := structs.User{}
+	err := db.QueryRow("SELECT username, email FROM User WHERE username = ?", username).Scan(&user.Username, &user.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("GetUser: %s\n", err.Error())
+		return nil, err
+	}
+
+	return &user, nil
+}
+

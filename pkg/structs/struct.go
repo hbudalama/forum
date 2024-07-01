@@ -41,13 +41,13 @@ type Session struct {
 }
 
 type HomeContext struct {
-	LoggedInUser User
+	LoggedInUser *User
 	Categories   []string
 	Posts        []Post
 }
 
 type PostContext struct {
-	LoggedInUser User
+	LoggedInUser *User
 	Categories   []string
 	Post         Post
 	Comments     []Comment
