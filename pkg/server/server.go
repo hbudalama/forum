@@ -63,7 +63,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CommentsHandler(w http.ResponseWriter, r *http.Request) {
-
+	
 }
 
 func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
