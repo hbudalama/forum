@@ -217,3 +217,9 @@ input:not(:checked) + label:hover {
         clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 0%);
     }
 }
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+    display: none;
+}
