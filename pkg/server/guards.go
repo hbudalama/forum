@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -35,12 +36,12 @@ func PostExistsGuard(w http.ResponseWriter, r *http.Request) bool {
 
 func MethodsGuard(w http.ResponseWriter, r *http.Request, methods ...string) bool {
 	method := strings.ToUpper(r.Method)
-
+	log.Printf("Request method: %s\n", method)
 	for _, v := range methods {
 		if method == strings.ToUpper(v) {
 			return true
 		}
 	}
-
+	log.Printf("Method not allowed: %s\n", method)
 	return false
 }

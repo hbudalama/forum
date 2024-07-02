@@ -16,6 +16,7 @@ import (
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if !MethodsGuard(w, r, "POST") {
+		http.Error(w, "Method Not Allowed SignupHandler", http.StatusMethodNotAllowed)
 		return
 	}
 	// if LoginGuard(r) {
@@ -73,6 +74,34 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
+
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+
+	var user structs.User
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user = session.User
+
+	err = db.CreatePost(title, content, user.Username)
+	if err != nil {
+		log.Printf("failed to create post: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,8 +131,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//  http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	//  fmt.Fprint(w, "Already logged in!")
 	//  return
+
 	// }
 	if !MethodsGuard(w, r, "GET", "POST") {
+		http.Error(w, "Method Not Allowed LoginHandler", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -157,7 +188,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		msg := fmt.Sprintf("Page Not Found, Did you forget to implement: '%s' handler?\n", r.URL.Path)
+		http.Error(w, msg, http.StatusNotFound)
+	}
+
 	if !MethodsGuard(w, r, "GET") {
+		http.Error(w, "Method Not Allowed HomeHandler", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -180,7 +217,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	posts := db.GetAllPosts()
-
 	ctx := structs.HomeContext{LoggedInUser: &user, Posts: posts}
 
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
