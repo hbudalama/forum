@@ -1,8 +1,6 @@
 package db
 
-import (
-	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
-)
+import "learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 
 func GetAllPosts() []structs.Post {
 	var posts []structs.Post
