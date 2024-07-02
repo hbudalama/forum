@@ -2,7 +2,7 @@ package db
 
 import "learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 
-func GetAllPosts() []structs.Post {
+func getAllPosts() []structs.Post {
 	var posts []structs.Post
 
 	err := db.QueryRow("SELECT * FROM posts").Scan(&posts)
@@ -14,7 +14,7 @@ func GetAllPosts() []structs.Post {
 	return posts
 }
 
-func GetFilteredPosts(category string) []structs.Post {
+func getFilteredPosts(category string) []structs.Post {
 	var filteredPosts []structs.Post
 	err := db.QueryRow("SELECT * FROM posts WHERE category = $1", category).Scan(&filteredPosts)
 
@@ -24,7 +24,7 @@ func GetFilteredPosts(category string) []structs.Post {
 	return filteredPosts
 }
 
-func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, []structs.Interaction) {
+func getPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, []structs.Interaction) {
 	var (
 		thisPost          structs.Post
 		thisUser          structs.User
