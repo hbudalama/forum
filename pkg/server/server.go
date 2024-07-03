@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,20 +122,82 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
+func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
+    if !LoginGuard(w, r) {
+        http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+        return
+    }
+
+    postIDStr := r.PathValue("id")
+    fmt.Printf("postIDStr: %s\n", postIDStr)  
+    postID, err := strconv.Atoi(postIDStr)
+    if err != nil {
+        http.Error(w, "Invalid post ID", http.StatusBadRequest)
+        return
+    }
+
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Printf("can't get the cookie: %s\n", err.Error())
+        return
+    }
+
+    token := cookie.Value
+
+    session, err := db.GetSession(token)
+    if err != nil {
+        log.Printf("can't get the session: %s\n", err.Error())
+        return
+    }
+    username := session.User.Username
+
+    err = db.InsertOrUpdateInteraction(postID, username, 1)
+    if err != nil {
+        http.Error(w, "Failed to add like", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/", http.StatusSeeOther)
+}
 
 func AddDislikesHandler(w http.ResponseWriter, r *http.Request) {
-	if !LoginGuard(w, r) {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-		return
-	}
+    if !LoginGuard(w, r) {
+        http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+        return
+    }
+
+    postIDStr := r.PathValue("id")
+    fmt.Printf("postIDStr: %s\n", postIDStr)  
+    postID, err := strconv.Atoi(postIDStr)
+    if err != nil {
+        http.Error(w, "Invalid post ID", http.StatusBadRequest)
+        return
+    }
+
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        log.Printf("can't get the cookie: %s\n", err.Error())
+        return
+    }
+
+    token := cookie.Value
+
+    session, err := db.GetSession(token)
+    if err != nil {
+        log.Printf("can't get the session: %s\n", err.Error())
+        return
+    }
+    username := session.User.Username
+
+    err = db.InsertOrUpdateInteraction(postID, username, 0)
+    if err != nil {
+        http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
-	if !LoginGuard(w, r) {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-		return
-	}
-}
 
 func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -180,6 +180,10 @@ nav {
     align-items: center;
     margin-right: 30px;
 }
+.activity-icons a {
+    color: white;
+}
+
 .icon {
     font-size: 20px; /* Adjust the size as needed */
     margin-right: 10px;

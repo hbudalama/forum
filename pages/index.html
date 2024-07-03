@@ -107,15 +107,21 @@
                     <p class="post-text">{{.Title}}</p>
                     <div class="post-row">
                         <div class="activity-icons">
-                            <div><i class="fa fa-thumbs-up icon"></i>#likes</div>
-                            <div><i class="fa fa-thumbs-down icon"></i>#dislikes</div>
+                            <div>
+                                <a href="/api/posts/{{.ID}}/like"><i class="fa fa-thumbs-up icon"></i>{{.Likes}}</a>
+                            </div>
+                            <div>
+                                <a href="/api/posts/{{.ID}}/dislike"><i class="fa fa-thumbs-down icon"></i>{{.Dislikes}}</a>
+                            </div>
                             <div><i class="fa fa-comment icon"></i>comments</div>
                         </div>
+                        
                         <div class="post-profile-icon">
                         </div>
                     </div>
                 </div>
                 {{end}}
+                
                 <footer class="footer">
                     <button type="button" class="load-more-button">Load more</button>
                 </footer>

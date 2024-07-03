@@ -47,5 +47,6 @@ CREATE TABLE IF NOT EXISTS Interaction (
     username        TEXT,
     Kind            INTEGER NOT NULL CHECK (Kind IN (0, 1)), -- 1 for like, 0 for dislike
     FOREIGN KEY (PostID) REFERENCES Post(PostID),
-    FOREIGN KEY (username) REFERENCES User(username)
+    FOREIGN KEY (username) REFERENCES User(username),
+    UNIQUE (PostID, username) 
 );
