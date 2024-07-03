@@ -26,7 +26,7 @@ func AddUser(username string, email string, hashedPassword string) (*structs.Use
 			}
 		}
 
-		return &structs.User{}, errors.New("internal server error")
+		return &structs.User{}, errors.New("internal server error ??")
 	}
 
 	return nil, nil
