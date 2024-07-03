@@ -21,7 +21,7 @@ type Post struct{
 // this function will be reused in the functions below
 func postExists(id int) bool {
 	var status bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE ID = $1)", id).Scan(&status)
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM post WHERE ID = $1)", id).Scan(&status)
 
 	if err != nil {
 		return false
@@ -32,7 +32,7 @@ func postExists(id int) bool {
 
 func userExists(username string) bool {
 	var status bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", username).Scan(&status)
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE username = $1)", username).Scan(&status)
 
 	if err != nil {
 		return false
@@ -58,7 +58,7 @@ func isOwner(post int, username string) bool {
 }
 
 func CreatePost(title string, content string, username string) error {
-	_, err := db.Exec("INSERT INTO posts (Title, Content, username) VALUES ($1, $2, $3)", title, content, username)
+	_, err := db.Exec("INSERT INTO post (Title, Content, username) VALUES ($1, $2, $3)", title, content, username)
 
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func DeletePost(id int, user string) error {
 	if !postExists(id) || !isOwner(id, user) {
 		return errors.New("post does not exist")
 	}
-	_, err := db.Exec("DELETE FROM posts WHERE ID = $1", id)
+	_, err := db.Exec("DELETE FROM post WHERE ID = $1", id)
 
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func Interact(post int, username string, interaction int) error {
 
 	//TO DO: Check if the user didn't already interact with the post
 
-	_, err := db.Exec("INSERT INTO interactions (PostID, Username, Interaction) VALUES ($1, $2, $3)", post, username, interaction)
+	_, err := db.Exec("INSERT INTO interaction (PostID, Username, Interaction) VALUES ($1, $2, $3)", post, username, interaction)
 
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func AddComment(post int, username string, comment string) error {
 		return errors.New("post does not exist")
 	}
 
-	_, err := db.Exec("INSERT INTO comments (PostID, Username, Comment) VALUES ($1, $2, $3)", post, username, comment)
+	_, err := db.Exec("INSERT INTO comment (PostID, Username, Comment) VALUES ($1, $2, $3)", post, username, comment)
 
 	if err != nil {
 		return err

@@ -1,22 +1,43 @@
 package db
 
-import "learn.reboot01.com/git/hbudalam/forum/pkg/structs"
+import (
+	"log"
+
+	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
+)
 
 func GetAllPosts() []structs.Post {
-	var posts []structs.Post
+    var posts []structs.Post
 
-	err := db.QueryRow("SELECT * FROM posts").Scan(&posts)
+    rows, err := db.Query("SELECT Title, Content, Username FROM post")
+    if err != nil {
+        log.Printf("Query error: %s", err)
+        return []structs.Post{}
+    }
+    defer rows.Close()
 
-	if err != nil {
-		return []structs.Post{}
-	}
+    for rows.Next() {
+        var post structs.Post
+        err := rows.Scan( &post.Title, &post.Content, &post.Username)
+        if err != nil {
+            log.Printf("Scan error: %s", err)
+            continue
+        }
+        posts = append(posts, post)
+    }
 
-	return posts
+    if err := rows.Err(); err != nil {
+        log.Printf("Rows error: %s", err)
+        return []structs.Post{}
+    }
+
+    return posts
 }
+
 
 func GetFilteredPosts(category string) []structs.Post {
 	var filteredPosts []structs.Post
-	err := db.QueryRow("SELECT * FROM posts WHERE category = $1", category).Scan(&filteredPosts)
+	err := db.QueryRow("SELECT * FROM post WHERE category = $1", category).Scan(&filteredPosts)
 
 	if err != nil {
 		return []structs.Post{}
@@ -32,7 +53,7 @@ func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, 
 		theseInteractions []structs.Interaction
 	)
 
-	err := db.QueryRow("SELECT * FROM posts WHERE id = $1", postId).Scan(&thisPost.ID, &thisPost.Title, &thisPost.Content, &thisPost.Categories)
+	err := db.QueryRow("SELECT * FROM post WHERE id = $1", postId).Scan(&thisPost.ID, &thisPost.Title, &thisPost.Content, &thisPost.Categories)
 
 	if err != nil {
 		return structs.Post{}, structs.User{}, []structs.Comment{}, []structs.Interaction{}
