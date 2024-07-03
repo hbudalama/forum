@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -16,18 +17,24 @@ import (
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if !MethodsGuard(w, r, "POST") {
-		http.Error(w, "Method Not Allowed SignupHandler", http.StatusMethodNotAllowed)
 		return
 	}
-	// if LoginGuard(r) {
-	//  http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-	//  return
-	// }ß
-
-	username := r.FormValue("username")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-
+	// username := r.FormValue("username")
+	// email := r.FormValue("email")
+	// password := r.FormValue("password")
+	var requestData struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	// Decode the JSON request body
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		http.Error(w, `{"success": false, "message": "Invalid request"}`, http.StatusBadRequest)
+		return
+	}
+	username := requestData.Username
+	email := requestData.Email
+	password := requestData.Password
 	if strings.TrimSpace(username) == "" {
 		http.Error(w, `{"error": "User ID is required"}`, http.StatusBadRequest)
 		return
@@ -44,9 +51,17 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error": "Password is required"}`, http.StatusBadRequest)
 		return
 	}
-
 	if !validatePassword(password) {
 		http.Error(w, `{"error": "Password must be at least 8 characters long "}`, http.StatusBadRequest)
+		return
+	}
+	exists, err := db.CheckUsernameExists(username)
+	if err != nil {
+		http.Error(w, `{"success": false, "message": "Internal server error"}`, http.StatusInternalServerError)
+		return
+	}
+	if exists {
+		http.Error(w, `{"success": false, "message": "Username already taken"}`, http.StatusBadRequest)
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -61,7 +76,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		println(err.Error())
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -127,63 +142,67 @@ func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// if LoginGuard(r) {
-	//  http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-	//  fmt.Fprint(w, "Already logged in!")
-	//  return
-
-	// }
 	if !MethodsGuard(w, r, "GET", "POST") {
-		http.Error(w, "Method Not Allowed LoginHandler", http.StatusMethodNotAllowed)
 		return
 	}
-
 	if r.Method == "POST" {
-		username := r.FormValue("username")
-		password := r.FormValue("password")
-
+		var requestData struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+			http.Error(w, `{"success": false, "message": "Invalid request"}`, http.StatusBadRequest)
+			return
+		}
+		username := strings.TrimSpace(requestData.Username)
+		password := strings.TrimSpace(requestData.Password)
+		if username == "" {
+			http.Error(w, `{"success": false, "message": "Username is required"}`, http.StatusBadRequest)
+			return
+		}
+		if password == "" {
+			http.Error(w, `{"success": false, "message": "Password is required"}`, http.StatusBadRequest)
+			return
+		}
 		exists, err := db.CheckUsernameExists(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking username: %s\n", err.Error())
-			http.Error(w, "Server error", http.StatusInternalServerError)
+			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
-
 		if !exists {
-			http.Error(w, "Username not found", http.StatusUnauthorized)
+			http.Error(w, `{"success": false, "message": "Username not found"}`, http.StatusUnauthorized)
 			return
 		}
-
 		passwordMatches, err := db.CheckPassword(username, password)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking password: %s\n", err.Error())
-			http.Error(w, "Server error", http.StatusInternalServerError)
+			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
-
 		if !passwordMatches {
-			http.Error(w, "Invalid password", http.StatusUnauthorized)
+			http.Error(w, `{"success": false, "message": "Invalid password"}`, http.StatusUnauthorized)
 			return
 		}
-
 		token, err := db.CreateSession(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error creating session: %s\n", err.Error())
-			http.Error(w, "Server error", http.StatusInternalServerError)
+			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
-
 		http.SetCookie(w, &http.Cookie{
 			Name:     "session_token",
 			Value:    token,
 			Expires:  time.Now().Add(24 * time.Hour),
 			HttpOnly: true,
 		})
-
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"message": "Login successful",
+		})
 		return
 	}
-
 	http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 }
 
@@ -240,4 +259,46 @@ func validEmail(email string) bool {
 
 func validatePassword(password string) bool {
 	return len(password) >= 8
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if !MethodsGuard(w, r, "DELETE") {
+		http.Error(w, "only DELETE requests allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !LoginGuard(w, r) {
+		http.Error(w, "You have to be logged in", http.StatusUnauthorized)
+		return
+	}
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			http.Error(w, "No session token found", http.StatusUnauthorized)
+			return
+		}
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	err = db.DeleteSession(cookie.Value)
+	if err != nil {
+		log.Printf("LogoutHandler: %s", err.Error())
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	// Clear the session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		// MaxAge: -1,
+		Path: "/",
+	})
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Logout successful",
+	})
 }

@@ -30,10 +30,11 @@ func GetSession(token string) (*structs.Session, error) {
 
 	err := db.QueryRow("SELECT sessionToken, sessionExpiration, username FROM User WHERE sessionToken = ?", token).Scan(&session.Token, &session.Expiry, &session.User.Username)
 	if err != nil {
-		log.Printf("GetSession: %s\n", err.Error())
+		
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
+		log.Printf("GetSession: %s\n", err.Error())
 		return nil, err
 	}
 	return &session, nil
