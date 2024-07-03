@@ -7,34 +7,6 @@ import (
 	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 )
 
-// func GetAllPosts() []structs.Post {
-// 	var posts []structs.Post
-// 	dbMutex.Lock()
-// 	defer dbMutex.Unlock()
-// 	rows, err := db.Query("SELECT PostID, Title, Content, Username FROM post")
-// 	if err != nil {
-// 		log.Printf("Query error: %s", err)
-// 		return []structs.Post{}
-// 	}
-// 	defer rows.Close()
-
-// 	for rows.Next() {
-// 		var post structs.Post
-// 		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Username)
-// 		if err != nil {
-// 			log.Printf("Scan error: %s", err)
-// 			continue
-// 		}
-// 		posts = append(posts, post)
-// 	}
-
-//		if err := rows.Err(); err != nil {
-//			log.Printf("Rows error: %s", err)
-//			return []structs.Post{}
-//		}
-//		fmt.Println(posts)
-//		return posts
-//	}
 func GetAllPosts() []structs.Post {
 	var posts []structs.Post
 	dbMutex.Lock()

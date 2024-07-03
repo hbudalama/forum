@@ -23,15 +23,15 @@ func main() {
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/login", server.LoginHandler) // ✅
-	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler)
-	mux.HandleFunc("/api/posts/{id}", server.GetPostsHandler)
-	mux.HandleFunc("/api/posts/{id}/dislike", server.AddDislikesHandler)
-	mux.HandleFunc("/api/posts/{id}/like", server.AddLikesHandler)
-	mux.HandleFunc("/api/categories", server.GetCategoriesHandler)
+	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler) // TODO
+	// mux.HandleFunc("/api/posts/{id}", server.GetPostsHandler)
+	mux.HandleFunc("/api/posts/{id}/dislike", server.AddDislikesHandler)// ✅
+	mux.HandleFunc("/api/posts/{id}/like", server.AddLikesHandler)// ✅
+	// mux.HandleFunc("/api/categories", server.GetCategoriesHandler)
 	mux.HandleFunc("/signup", server.SignupHandler) // ✅
-	mux.HandleFunc("/", server.HomeHandler)
-	mux.HandleFunc("/add-post",server.AddPostsHandler)
-	mux.HandleFunc("/logout", server.LogoutHandler)
+	mux.HandleFunc("/", server.HomeHandler) // ✅
+	mux.HandleFunc("/add-post",server.AddPostsHandler) // ✅
+	mux.HandleFunc("/logout", server.LogoutHandler) // ✅
 
 	log.Println("Serving on http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)

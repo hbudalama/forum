@@ -1,8 +1,5 @@
 CREATE TABLE IF NOT EXISTS User (
-    -- UserID              INTEGER PRIMARY KEY AUTOINCREMENT,
     username            TEXT PRIMARY KEY,
-    -- FirstName           TEXT,
-    -- LastName            TEXT,
     email               TEXT NOT NULL UNIQUE,
     password            TEXT NOT NULL,
     sessionToken        TEXT,
