@@ -39,21 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({ username, password }),
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Login response:", data);
-            if (data.success) {
-                window.location.href = '/'; // Redirect to home page
-            } else {
-                loginError.textContent = data.message || "An error occurred during login.";
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Redirect to home page
+                    return
+                }
+                return response.json()
+
+            })
+            .then(data => {
+                console.log("Login response:", data);
+
+                loginError.textContent = data.reason || "An error occurred during login.";
                 loginError.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.log("Login error:", error);
-            loginError.textContent = "An error occurred: " + error.message;
-            loginError.style.display = 'block';
-        });
+
+            })
+            .catch(error => {
+                console.log("Login error:", error);
+                loginError.textContent = "An error occurred: " + error.message;
+                loginError.style.display = 'block';
+            });
     });
     registerField.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -86,20 +91,23 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify(requestData),
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Signup response:", data);
-            if (data.success) {
-                window.location.href = '/'; // Redirect to home page
-            } else {
-                registerError.textContent = data.message || "An error occurred during registration.";
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/login'; // Redirect to home page
+                    alert("please log in")
+                    return
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log("Signup response:", data);
+                registerError.textContent = data.reason || "An error occurred during registration.";
                 registerError.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.log("Signup error:", error);
-            registerError.textContent = "An error occurred: " + error.message;
-            registerError.style.display = 'block';
-        });
+            })
+            .catch(error => {
+                console.log("Signup error:", error);
+                registerError.textContent = "An error occurred: " + error;
+                registerError.style.display = 'block';
+            });
     });
 });

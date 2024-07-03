@@ -29,54 +29,53 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Decode the JSON request body
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-		http.Error(w, `{"success": false, "message": "Invalid request"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
 		return
 	}
 	username := requestData.Username
 	email := requestData.Email
 	password := requestData.Password
 	if strings.TrimSpace(username) == "" {
-		http.Error(w, `{"error": "User ID is required"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "User ID is required"}`, http.StatusBadRequest)
 		return
 	}
 	if strings.TrimSpace(email) == "" {
-		http.Error(w, `{"error": "Email is required"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Email is required"}`, http.StatusBadRequest)
 		return
 	}
 	if !validEmail(email) {
-		http.Error(w, `{"error": "Invalid email format"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Invalid email format"}`, http.StatusBadRequest)
 		return
 	}
 	if strings.TrimSpace(password) == "" {
-		http.Error(w, `{"error": "Password is required"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Password is required"}`, http.StatusBadRequest)
 		return
 	}
 	if !validatePassword(password) {
-		http.Error(w, `{"error": "Password must be at least 8 characters long "}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Password must be at least 8 characters long "}`, http.StatusBadRequest)
 		return
 	}
 	exists, err := db.CheckUsernameExists(username)
 	if err != nil {
-		http.Error(w, `{"success": false, "message": "Internal server error"}`, http.StatusInternalServerError)
+		http.Error(w, `{"reason": "Internal server error"}`, http.StatusInternalServerError)
 		return
 	}
 	if exists {
-		http.Error(w, `{"success": false, "message": "Username already taken"}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Username already taken"}`, http.StatusBadRequest)
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, `{"error": "internal server error"}`, http.StatusInternalServerError)
+		http.Error(w, `{"reason": "internal server error"}`, http.StatusInternalServerError)
 		return
 	}
 	_, err = db.AddUser(username, email, string(hashedPassword))
 	if err != nil {
-		errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
+		errMsg := fmt.Sprintf(`{"reason": "%s"}`, err.Error())
 		http.Error(w, errMsg, http.StatusBadRequest)
 		println(err.Error())
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -151,43 +150,43 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Password string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-			http.Error(w, `{"success": false, "message": "Invalid request"}`, http.StatusBadRequest)
+			http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
 			return
 		}
 		username := strings.TrimSpace(requestData.Username)
 		password := strings.TrimSpace(requestData.Password)
 		if username == "" {
-			http.Error(w, `{"success": false, "message": "Username is required"}`, http.StatusBadRequest)
+			http.Error(w, `{"reason": "Username is required"}`, http.StatusBadRequest)
 			return
 		}
 		if password == "" {
-			http.Error(w, `{"success": false, "message": "Password is required"}`, http.StatusBadRequest)
+			http.Error(w, `{"reason": "Password is required"}`, http.StatusBadRequest)
 			return
 		}
 		exists, err := db.CheckUsernameExists(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking username: %s\n", err.Error())
-			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
+			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
 		if !exists {
-			http.Error(w, `{"success": false, "message": "Username not found"}`, http.StatusUnauthorized)
+			http.Error(w, `{"reason": "Username not found"}`, http.StatusUnauthorized)
 			return
 		}
 		passwordMatches, err := db.CheckPassword(username, password)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking password: %s\n", err.Error())
-			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
+			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
 		if !passwordMatches {
-			http.Error(w, `{"success": false, "message": "Invalid password"}`, http.StatusUnauthorized)
+			http.Error(w, `{"reason": "Invalid password"}`, http.StatusUnauthorized)
 			return
 		}
 		token, err := db.CreateSession(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error creating session: %s\n", err.Error())
-			http.Error(w, `{"success": false, "message": "Server error"}`, http.StatusInternalServerError)
+			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
@@ -196,12 +195,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Expires:  time.Now().Add(24 * time.Hour),
 			HttpOnly: true,
 		})
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": true,
-			"message": "Login successful",
-		})
-		return
 	}
 	http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 }
@@ -244,6 +237,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Printf("Home: %+v\n", ctx.LoggedInUser)
 
 	err = tmpl.Execute(w, ctx)
 	if err != nil {
@@ -295,10 +290,5 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		// MaxAge: -1,
 		Path: "/",
 	})
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Logout successful",
-	})
 }
