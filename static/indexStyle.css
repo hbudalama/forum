@@ -168,7 +168,7 @@ nav {
     align-items: center;
     justify-content: space-between;
 }
-.post-button-container {
+#post-button-container {
     width: 100%;
 }
 .activity-icons div img{

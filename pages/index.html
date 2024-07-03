@@ -23,7 +23,11 @@
                     <input type="text" placeholder="Search...">
                 </div>
                 <div class="dropdown">
-                    <div class="user-icon online">
+                    {{if .LoggedInUser }}
+                    <div class="online">
+                    </div>
+                    {{end}}
+                    <div class="user-icon">
                         <img src="/static/images/user.png" class="profile-image">
                     </div>
                     <div class="dropdown-options">
@@ -65,7 +69,7 @@
             </div>
             <!------------------------------main content--------------------------->
             <div class="main-content">
-                {{ if .LoggedInUser }}
+                {{ if .LoggedInUser}}
                 <div class="post-container">
                     <div class="user-profile">
                         <img src="/static/images/user.png">
