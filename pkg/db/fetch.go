@@ -8,7 +8,8 @@ import (
 
 func GetAllPosts() []structs.Post {
     var posts []structs.Post
-
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
     rows, err := db.Query("SELECT Title, Content, Username FROM post")
     if err != nil {
         log.Printf("Query error: %s", err)
