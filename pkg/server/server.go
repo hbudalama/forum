@@ -209,8 +209,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed HomeHandler", http.StatusMethodNotAllowed)
 		return
 	}
-
-	var user structs.User
+	ctx := structs.HomeContext{}
 	if LoginGuard(w, r) {
 		cookie, err := r.Cookie("session_token")
 		if err != nil {
@@ -225,11 +224,11 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("can't get the session: %s\n", err.Error())
 			return
 		}
-		user = session.User
+		fmt.Printf("Fick this shot: %+v\n", session.User)
+		ctx.LoggedInUser = &session.User
 	}
 
-	posts := db.GetAllPosts()
-	ctx := structs.HomeContext{LoggedInUser: &user, Posts: posts}
+	ctx.Posts = db.GetAllPosts()
 
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
 	if err != nil {
@@ -237,8 +236,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Printf("Home: %+v\n", ctx.LoggedInUser)
 
 	err = tmpl.Execute(w, ctx)
 	if err != nil {

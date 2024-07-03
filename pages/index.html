@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
     <div class="index">
         <nav>
@@ -63,11 +65,12 @@
             </div>
             <!------------------------------main content--------------------------->
             <div class="main-content">
+                {{ if .LoggedInUser }}
                 <div class="post-container">
                     <div class="user-profile">
                         <img src="/static/images/user.png">
                         <div>
-                            <p>{{.LoggedInUser.Username}}</p>
+                            <p>{{ .LoggedInUser.Username }}</p>
                         </div>
                     </div>
                     <form action="/add-post" method="POST">
@@ -76,16 +79,21 @@
                         <p>Choose a category:</p>
                         <br>
                         <ul>
-                            <li><input type="checkbox" id="education" name="category" value="education"><label for="education"> Education</label></li>
-                            <li><input type="checkbox" id="entertainment" name="category" value="entertainment"><label for="entertainment"> Entertainment</label></li>
-                            <li><input type="checkbox" id="sports" name="category" value="sports"><label for="sports"> Sports</label></li>
-                            <li><input type="checkbox" id="news" name="category" value="news"><label for="news"> News</label></li>
+                            <li><input type="checkbox" id="education" name="category" value="education"><label
+                                    for="education"> Education</label></li>
+                            <li><input type="checkbox" id="entertainment" name="category" value="entertainment"><label
+                                    for="entertainment"> Entertainment</label></li>
+                            <li><input type="checkbox" id="sports" name="category" value="sports"><label for="sports">
+                                    Sports</label></li>
+                            <li><input type="checkbox" id="news" name="category" value="news"><label for="news">
+                                    News</label></li>
                         </ul>
                         <div id="post-button-container">
                             <button class="post-button" type="submit">Post</button>
                         </div>
                     </form>
                 </div>
+                {{end}}
                 {{range .Posts}}
                 <div class="post">
                     <div class="post-row">
@@ -116,4 +124,5 @@
     </div>
 </body>
 <script src="/static/index.js"></script>
+
 </html>
