@@ -17,6 +17,7 @@ type Post struct {
 	Interactions []Interaction
 	Likes        int
 	Dislikes     int
+	Comments int
 }
 
 type Comment struct {

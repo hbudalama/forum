@@ -15,12 +15,16 @@ func GetAllPosts() []structs.Post {
 	SELECT 
 	p.PostID, p.Title, p.Content, p.Username, 
 	IFNULL(likes.likes, 0) as likes, 
-	IFNULL(dislikes.dislikes, 0) as dislikes 
+	IFNULL(dislikes.dislikes, 0) as dislikes, 
+	IFNULL(comments.comments, 0) as comments
 	FROM post p
 	LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM interaction WHERE Kind = 1 GROUP BY PostID) likes 
 	ON p.PostID = likes.PostID
 	LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
-	ON p.PostID = dislikes.PostID ORDER BY "CreatedDate" DESC 
+	ON p.PostID = dislikes.PostID
+	LEFT JOIN (SELECT PostID, COUNT(*) as comments FROM comment GROUP BY PostID) comments
+	ON p.PostID = comments.PostID
+	ORDER BY p.CreatedDate DESC 
     `)
 	if err != nil {
 		log.Printf("Query error: %s", err)
@@ -30,7 +34,7 @@ func GetAllPosts() []structs.Post {
 
 	for rows.Next() {
 		var post structs.Post
-		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Username, &post.Likes, &post.Dislikes)
+		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Username, &post.Likes, &post.Dislikes, &post.Comments)
 		if err != nil {
 			log.Printf("Scan error: %s", err)
 			continue
