@@ -363,3 +363,9 @@ button:hover {
     color: #ffffff;
     text-decoration: none;
 }
+
+.post-title-link h2{
+    margin-top: 16px;
+    margin-bottom: 16px;
+    padding: 4px;
+}

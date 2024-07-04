@@ -11,13 +11,12 @@
 </head>
 
 <body>
-
     <div class="index">
         <nav>
             <a href="/">
                 <img src="/static/images/logo.png" class="logo">
             </a>
-        
+
             <div class="nav-right">
                 <div class="dropdown">
                     {{if .LoggedInUser}}
@@ -53,7 +52,11 @@
                     <button type="submit">Comment</button>
                 </form>
                 {{else}}
-                <p><a href="/login">Login to add a comment</a></p>
+                <p>
+                    <a href="/login">
+                        Login to add a comment
+                    </a>
+                </p>
                 {{end}}
             </div>
         </div>
