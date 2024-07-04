@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -17,6 +19,17 @@ func Connect() error {
 	if err != nil {
 		return err
 	}
+
+	sqlFile, err := os.ReadFile("./sql/createTables.sql")
+	if err != nil {
+		return fmt.Errorf("failed to read SQL file: %v", err)
+	}
+
+	_, err = database.Exec(string(sqlFile))
+	if err != nil {
+		return fmt.Errorf("failed to execute SQL commands: %v", err)
+	}
+
 	db = database
 	return nil
 }

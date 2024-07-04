@@ -47,3 +47,13 @@ CREATE TABLE IF NOT EXISTS Interaction (
     FOREIGN KEY (username) REFERENCES User(username),
     UNIQUE (PostID, username) 
 );
+
+CREATE TABLE IF NOT EXISTS CommentInteractions (
+    CommentInteractionID    INTEGER PRIMARY KEY AUTOINCREMENT,
+    CommentID               INTEGER,
+    username                TEXT,
+    Kind                    INTEGER NOT NULL CHECK (Kind IN (0, 1)), -- 1 for like, 0 for dislike
+    FOREIGN KEY (CommentID) REFERENCES Comment(CommentID),
+    FOREIGN KEY (username) REFERENCES User(username),
+    UNIQUE (CommentID, username) 
+);
