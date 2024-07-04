@@ -3,23 +3,20 @@ package structs
 import "time"
 
 type User struct {
-	// ID int
 	Username string
-	// FirstName string
-	// LastName string
-	Email string
+	Email    string
 }
 
 type Post struct {
-    ID           int
-    Title        string
-    Content      string
-    CreatedDate  time.Time
-    Username     string
-    Categories   []string
-    Interactions []Interaction
-    Likes        int
-    Dislikes     int
+	ID           int
+	Title        string
+	Content      string
+	CreatedDate  time.Time
+	Username     string
+	Categories   []string
+	Interactions []Interaction
+	Likes        int
+	Dislikes     int
 }
 
 type Comment struct {
@@ -27,7 +24,7 @@ type Comment struct {
 	Content      string
 	CreatedDate  time.Time
 	PostID       int
-	UserID       int
+	Username     string
 	Interactions []Interaction
 }
 

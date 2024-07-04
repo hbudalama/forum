@@ -80,20 +80,20 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func CommentsHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
+func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
 	if !LoginGuard(w, r) {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
 
-	title := r.FormValue("title")
-	content := r.FormValue("content")
+	postIDStr := r.PathValue("id")
+	fmt.Printf("postIDStr: %s\n", postIDStr)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
 
-	var user structs.User
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		log.Printf("can't get the cookie: %s\n", err.Error())
@@ -107,97 +107,54 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("can't get the session: %s\n", err.Error())
 		return
 	}
-	user = session.User
+	username := session.User.Username
 
-	err = db.CreatePost(title, content, user.Username)
+	err = db.InsertOrUpdateInteraction(postID, username, 1)
 	if err != nil {
-		log.Printf("failed to create post: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Failed to add like", http.StatusInternalServerError)
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
-    if !LoginGuard(w, r) {
-        http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-        return
-    }
-
-    postIDStr := r.PathValue("id")
-    fmt.Printf("postIDStr: %s\n", postIDStr)  
-    postID, err := strconv.Atoi(postIDStr)
-    if err != nil {
-        http.Error(w, "Invalid post ID", http.StatusBadRequest)
-        return
-    }
-
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Printf("can't get the cookie: %s\n", err.Error())
-        return
-    }
-
-    token := cookie.Value
-
-    session, err := db.GetSession(token)
-    if err != nil {
-        log.Printf("can't get the session: %s\n", err.Error())
-        return
-    }
-    username := session.User.Username
-
-    err = db.InsertOrUpdateInteraction(postID, username, 1)
-    if err != nil {
-        http.Error(w, "Failed to add like", http.StatusInternalServerError)
-        return
-    }
-
-    http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
 func AddDislikesHandler(w http.ResponseWriter, r *http.Request) {
-    if !LoginGuard(w, r) {
-        http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-        return
-    }
+	if !LoginGuard(w, r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
 
-    postIDStr := r.PathValue("id")
-    fmt.Printf("postIDStr: %s\n", postIDStr)  
-    postID, err := strconv.Atoi(postIDStr)
-    if err != nil {
-        http.Error(w, "Invalid post ID", http.StatusBadRequest)
-        return
-    }
+	postIDStr := r.PathValue("id")
+	fmt.Printf("postIDStr: %s\n", postIDStr)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
 
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Printf("can't get the cookie: %s\n", err.Error())
-        return
-    }
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
 
-    token := cookie.Value
+	token := cookie.Value
 
-    session, err := db.GetSession(token)
-    if err != nil {
-        log.Printf("can't get the session: %s\n", err.Error())
-        return
-    }
-    username := session.User.Username
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	username := session.User.Username
 
-    err = db.InsertOrUpdateInteraction(postID, username, 0)
-    if err != nil {
-        http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
-        return
-    }
+	err = db.InsertOrUpdateInteraction(postID, username, 0)
+	if err != nil {
+		http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
+		return
+	}
 
-    http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
-
 
 func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -296,14 +253,14 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
 	if err != nil {
 		log.Printf("can't parse the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error HomeHandler", http.StatusInternalServerError)
 		return
 	}
 
 	err = tmpl.Execute(w, ctx)
 	if err != nil {
 		log.Printf("can't execute the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error HomeHandler", http.StatusInternalServerError)
 		return
 	}
 }
@@ -332,13 +289,13 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("can't get the cookie: %s\n", err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Internal server error LogoutHandler", http.StatusInternalServerError)
 		return
 	}
 	err = db.DeleteSession(cookie.Value)
 	if err != nil {
 		log.Printf("LogoutHandler: %s", err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Internal server error LogoutHandler", http.StatusInternalServerError)
 		return
 	}
 	// Clear the session cookie
@@ -351,4 +308,231 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Path: "/",
 	})
 	w.WriteHeader(http.StatusOK)
+}
+func PostHandler(w http.ResponseWriter, r *http.Request) {
+	postIDStr := r.URL.Path[len("/posts/"):]
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	post, err := db.GetPost(postID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	comments, err := db.GetComments(postID)
+	if err != nil {
+		http.Error(w, "Error retrieving comments", http.StatusInternalServerError)
+		return
+	}
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user := session.User
+
+	data := struct {
+		Post         structs.Post
+		Comments     []structs.Comment
+		LoggedInUser *structs.User
+	}{
+		Post:         post,
+		Comments:     comments,
+		LoggedInUser: &user,
+	}
+
+	tmpl, err := template.ParseFiles("templates/posts.html")
+	if err != nil {
+		http.Error(w, "Error loading template", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, data)
+}
+
+func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	postIDStr := r.URL.Path[len("/api/posts/") : len(r.URL.Path)-len("/comments")]
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	username := session.User.Username
+
+	comment := r.FormValue("comment")
+	if comment == "" {
+		http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	err = db.AddComment(postID, username, comment)
+	if err != nil {
+		http.Error(w, "Error adding comment", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/posts/"+strconv.Itoa(postID), http.StatusSeeOther)
+}
+
+func CommentsHandler(w http.ResponseWriter, r *http.Request) {
+	if !LoginGuard(w, r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		postIDStr := r.URL.Path[len("/api/posts/") : len(r.URL.Path)-len("/comments")]
+		postID, err := strconv.Atoi(postIDStr)
+		if err != nil {
+			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			return
+		}
+
+		comment := r.FormValue("comment")
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			log.Printf("can't get the cookie: %s\n", err.Error())
+			return
+		}
+
+		token := cookie.Value
+		session, err := db.GetSession(token)
+		if err != nil {
+			log.Printf("can't get the session: %s\n", err.Error())
+			return
+		}
+
+		username := session.User.Username
+
+		err = db.AddComment(postID, username, comment)
+		if err != nil {
+			http.Error(w, "Failed to add comment", http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("/posts/%d", postID), http.StatusSeeOther)
+	}
+}
+
+func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if !LoginGuard(w, r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+
+	var user structs.User
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user = session.User
+
+	err = db.CreatePost(title, content, user.Username)
+	if err != nil {
+		log.Printf("failed to create post: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func GetPostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	postIDStr := r.URL.Path[len("/posts/"):]
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	post, err := db.GetPost(postID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	comments, err := db.GetComments(postID)
+	if err != nil {
+		http.Error(w, "Failed to get comments", http.StatusInternalServerError)
+		return
+	}
+
+	var user *structs.User
+	if LoginGuard(w, r) {
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			token := cookie.Value
+			session, err := db.GetSession(token)
+			if err == nil {
+				user = &session.User
+			}
+		}
+	}
+
+	ctx := struct {
+		Post         structs.Post
+		Comments     []structs.Comment
+		LoggedInUser *structs.User
+	}{
+		Post:         post,
+		Comments:     comments,
+		LoggedInUser: user,
+	}
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "posts.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, ctx)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }

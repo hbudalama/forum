@@ -29,7 +29,6 @@
                     <div class="dropdown-options">
                         {{if .LoggedInUser}}
                         <button id="logoutBtn">Logout</button>
-                        <!-- <a href="/logout">Logout</a> -->
                         {{else}}
                         <a href="/login">Register/Login</a>
                         {{end}}
@@ -38,7 +37,7 @@
             </div>
         </nav>
         <div class="container">
-            <!-------------------------------left sidebar--------------------------->
+            <!-- Left sidebar -->
             <div class="left-sidebar">
                 <div class="filter-section">
                     <h3>Categories</h3>
@@ -63,7 +62,7 @@
                     </ul>
                 </div>
             </div>
-            <!------------------------------main content--------------------------->
+            <!-- Main content -->
             <div class="main-content">
                 {{ if .LoggedInUser}}
                 <div class="post-container">
@@ -104,24 +103,24 @@
                             </div>
                         </div>
                     </div>
-                    <p class="post-text">{{.Title}}</p>
+                    <a href="/posts/{{.ID}}" class="post-title-link">
+                        <p class="post-text">{{.Title}}</p>
+                    </a>
                     <div class="post-row">
                         <div class="activity-icons">
                             <div>
                                 <a href="/api/posts/{{.ID}}/like"><i class="fa fa-thumbs-up icon"></i>{{.Likes}}</a>
                             </div>
                             <div>
-                                <a href="/api/posts/{{.ID}}/dislike"><i class="fa fa-thumbs-down icon"></i>{{.Dislikes}}</a>
+                                <a href="/api/posts/{{.ID}}/dislike"><i
+                                        class="fa fa-thumbs-down icon"></i>{{.Dislikes}}</a>
                             </div>
                             <div><i class="fa fa-comment icon"></i>comments</div>
                         </div>
-                        
-                        <div class="post-profile-icon">
-                        </div>
+                        <div class="post-profile-icon"></div>
                     </div>
                 </div>
                 {{end}}
-                
                 <footer class="footer">
                     <button type="button" class="load-more-button">Load more</button>
                 </footer>

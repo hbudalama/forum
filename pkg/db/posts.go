@@ -1,22 +1,11 @@
 package db
 
-import "errors"
+import (
+	"errors"
+	"fmt"
 
-/*
-type User struct{
-	Username string
-	Email string
-}
-type Post struct{
-	ID int
-	Title string
-	Content string
-	CreatedDate time.Time
-	UserID *User
-	Categories []string
-	Interactions []Interaction
-}
-*/
+	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
+)
 
 // this function will be reused in the functions below
 func postExists(id int) bool {
@@ -96,16 +85,65 @@ func Interact(post int, username string, interaction int) error {
 	return nil
 }
 
-func AddComment(post int, username string, comment string) error {
-	if !postExists(post) {
-		return errors.New("post does not exist")
-	}
+func AddComment(PostID int, username string, Content string) error {
+	fmt.Println("i am here 1")
+	// if !postExists(PostID) {
+	// 	return errors.New("post does not exist")
+	// }   this  vis not working
+	fmt.Println("i am here nowww ")
 
-	_, err := db.Exec("INSERT INTO comment (PostID, Username, Comment) VALUES ($1, $2, $3)", post, username, comment)
+	_, err := db.Exec("INSERT INTO Comment (PostID, username, Content) VALUES ($1, $2, $3)", PostID, username, Content)
+	fmt.Println("i am here at end")
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func GetPost(postID int) (structs.Post, error) {
+	var post structs.Post
+
+	row := db.QueryRow("SELECT PostID, Title, Content, CreatedDate, username FROM Post WHERE PostID = $1", postID)
+	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username)
+	if err != nil {
+		return post, err
+	}
+
+	rows, err := db.Query("SELECT CategoryName FROM Category c INNER JOIN PostCategory pc ON c.CategoryID = pc.CategoryID WHERE pc.PostID = $1", postID)
+	if err != nil {
+		return post, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var category string
+		if err := rows.Scan(&category); err != nil {
+			return post, err
+		}
+		post.Categories = append(post.Categories, category)
+	}
+
+	return post, nil
+}
+
+func GetComments(postID int) ([]structs.Comment, error) {
+	var comments []structs.Comment
+
+	rows, err := db.Query("SELECT CommentID, Content, CreatedDate, PostID, username FROM Comment WHERE PostID = $1", postID)
+	if err != nil {
+		return comments, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var comment structs.Comment
+		if err := rows.Scan(&comment.ID, &comment.Content, &comment.CreatedDate, &comment.PostID, &comment.Username); err != nil {
+			return comments, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
 }

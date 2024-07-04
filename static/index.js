@@ -8,10 +8,12 @@ logoutBtn.addEventListener("click", () => {
             'Content-Type': 'application/json',
         },
     })
-    .then(response => {
-    window.location.href = ('/login')
-    })
- 
+        .then(response => {
+            window.location.href = ('/login')
+        })
+
 });
 
 postBtn.addEventListener()
+
+
