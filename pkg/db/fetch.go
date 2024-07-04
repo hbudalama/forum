@@ -73,6 +73,22 @@ func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, 
 	return thisPost, thisUser, theseComments, theseInteractions
 }
 
+func GetCommentDetails(commentId int) (structs.Comment, structs.User, []structs.CommentInteraction) {
+	var (
+		thisComment              structs.Comment
+		thisUser                 structs.User
+		theseCommentInteractions []structs.CommentInteraction
+	)
+
+	err := db.QueryRow("SELECT * FROM comment WHERE id = $1", commentId).Scan(&thisComment.ID, &thisComment.Content, &thisComment.PostID)
+
+	if err != nil {
+		return structs.Comment{}, structs.User{}, []structs.CommentInteraction{}
+	}
+
+	return thisComment, thisUser, theseCommentInteractions
+}
+
 func InsertOrUpdateInteraction(postID int, username string, kind int) error {
 	var existingKind int
 	err := db.QueryRow("SELECT Kind FROM Interaction WHERE PostID = ? AND Username = ?", postID, username).Scan(&existingKind)

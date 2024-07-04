@@ -33,6 +33,11 @@ type Interaction struct {
 	Kind   int
 }
 
+type CommentInteraction struct {
+	UserId int
+	Kind   int
+}
+
 type Session struct {
 	Token  string
 	Expiry time.Time
