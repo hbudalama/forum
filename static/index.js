@@ -1,7 +1,4 @@
-const logoutBtn = document.getElementById('logoutBtn');
-const postBtn = document.getElementById('post-button-container');
-
-logoutBtn.addEventListener("click", () => {
+function logoutHandler(e){
     fetch('/logout', {
         method: 'DELETE',
         headers: {
@@ -12,8 +9,4 @@ logoutBtn.addEventListener("click", () => {
             window.location.href = ('/login')
         })
 
-});
-
-// postBtn.addEventListener()
-
-
+}

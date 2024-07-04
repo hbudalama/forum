@@ -28,7 +28,7 @@
                     </div>
                     <div class="dropdown-options">
                         {{if .LoggedInUser}}
-                        <button id="logoutBtn">Logout</button>
+                        <button id="logoutBtn" onclick="logoutHandler(event)">Logout</button>
                         {{else}}
                         <a href="/login">Register/Login</a>
                         {{end}}
@@ -103,9 +103,9 @@
                             </div>
                         </div>
                     </div>
-                    <a href="/posts/{{.ID}}" class="post-title-link">
+                    <button href="" onclick="openPostModal('/posts/{{.ID}}')" class="post-title-link">
                         <p class="post-text">{{.Title}}</p>
-                    </a>
+                    </button>
                     <div class="post-row">
                         <div class="activity-icons">
                             <div>
@@ -125,6 +125,13 @@
                     <button type="button" class="load-more-button">Load more</button>
                 </footer>
             </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePostModal()">&times;</span>
+            <iframe id="postIframe" src="" width="100%" height="500px"></iframe>
         </div>
     </div>
 </body>

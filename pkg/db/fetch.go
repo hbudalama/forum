@@ -12,15 +12,15 @@ func GetAllPosts() []structs.Post {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	rows, err := db.Query(`
-        SELECT 
-            p.PostID, p.Title, p.Content, p.Username, 
-            IFNULL(likes.likes, 0) as likes, 
-            IFNULL(dislikes.dislikes, 0) as dislikes 
-        FROM post p
-        LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM interaction WHERE Kind = 1 GROUP BY PostID) likes 
-            ON p.PostID = likes.PostID
-        LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
-            ON p.PostID = dislikes.PostID
+	SELECT 
+	p.PostID, p.Title, p.Content, p.Username, 
+	IFNULL(likes.likes, 0) as likes, 
+	IFNULL(dislikes.dislikes, 0) as dislikes 
+	FROM post p
+	LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM interaction WHERE Kind = 1 GROUP BY PostID) likes 
+	ON p.PostID = likes.PostID
+	LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
+	ON p.PostID = dislikes.PostID ORDER BY "CreatedDate" DESC 
     `)
 	if err != nil {
 		log.Printf("Query error: %s", err)
