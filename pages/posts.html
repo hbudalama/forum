@@ -1,3 +1,4 @@
+post:
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,28 +7,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Post.Title}}</title>
     <link rel="stylesheet" href="/static/posts.css">
+    <link rel="stylesheet" href="/static/indexStyle.css">
+
 </head>
 
 <body>
-    <div class="post">
-        <h1>{{.Post.Title}}</h1>
-        <p>{{.Post.Content}}</p>
-        <hr>
-        <h2>Comments</h2>
-        <ul>
-            {{range .Comments}}
-            <li>{{.Username}}: {{.Content}}</li>
-            {{end}}
-        </ul>
-        {{if .LoggedInUser}}
-        <form action="/api/posts/{{.Post.ID}}/comments" method="POST">
-            <textarea name="comment" placeholder="Add a comment..."></textarea>
-            <button type="submit">Comment</button>
-        </form>
-        {{else}}
-        <p><a href="/login">Login to add a comment</a></p>
-        {{end}}
+
+    <div class="index">
+        <nav>
+            <a href="/">
+                <img src="/static/images/logo.png" class="logo">
+            </a>
+        
+            <div class="nav-right">
+                <div class="dropdown">
+                    {{if .LoggedInUser}}
+                    <div class="online"></div>
+                    {{end}}
+                    <div class="user-icon">
+                        <img src="/static/images/user.png" class="profile-image">
+                    </div>
+                    <div class="dropdown-options">
+                        {{if .LoggedInUser}}
+                        <button id="logoutBtn" onclick="logoutHandler(event)">Logout</button>
+                        {{else}}
+                        <a href="/login">Register/Login</a>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="post">
+                <h1>{{.Post.Title}}</h1>
+                <p>{{.Post.Content}}</p>
+                <hr>
+                <h2>Comments</h2>
+                <ul>
+                    {{range .Comments}}
+                    <li>{{.Username}}: {{.Content}}</li>
+                    {{end}}
+                </ul>
+                {{if .LoggedInUser}}
+                <form action="/api/posts/{{.Post.ID}}/comments" method="POST">
+                    <textarea name="comment" placeholder="Add a comment..."></textarea>
+                    <button type="submit">Comment</button>
+                </form>
+                {{else}}
+                <p><a href="/login">Login to add a comment</a></p>
+                {{end}}
+            </div>
+        </div>
     </div>
+
 </body>
 <script src="/static/index.js"></script>
 

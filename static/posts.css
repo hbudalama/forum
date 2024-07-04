@@ -9,13 +9,18 @@ body {
     min-height: 100vh;
 }
 
-.post {
-    background: #ffffff;
+.container {
+    background: rgba(0, 0, 0, 0.);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 30px;
     max-width: 800px;
     width: 100%;
+    margin-left: 325px;
+    margin-top: 50px;
+}
+
+.post {
     margin: 20px;
 }
 
