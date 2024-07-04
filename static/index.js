@@ -14,6 +14,6 @@ logoutBtn.addEventListener("click", () => {
 
 });
 
-postBtn.addEventListener()
+// postBtn.addEventListener()
 
 

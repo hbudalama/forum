@@ -66,14 +66,14 @@
             <div class="main-content">
                 {{ if .LoggedInUser}}
                 <div class="post-container">
-                    <div class="user-profile">
+                    <div class="user-profile-post">
                         <img src="/static/images/user.png">
                         <div>
                             <p>{{ .LoggedInUser.Username }}</p>
                         </div>
                     </div>
                     <form action="/add-post" method="POST">
-                        <textarea name="title" rows="3" placeholder="What's on your mind?"></textarea>
+                        <textarea name="title" rows="3" placeholder="What's on your mind?" ></textarea>
                         <textarea name="content" rows="3" placeholder="Content..."></textarea>
                         <p>Choose a category:</p>
                         <br>
@@ -129,5 +129,4 @@
     </div>
 </body>
 <script src="/static/index.js"></script>
-
 </html>

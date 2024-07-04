@@ -362,43 +362,43 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
-	postIDStr := r.URL.Path[len("/api/posts/") : len(r.URL.Path)-len("/comments")]
-	postID, err := strconv.Atoi(postIDStr)
-	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
-		return
-	}
+// func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+// 	postIDStr := r.URL.Path[len("/api/posts/") : len(r.URL.Path)-len("/comments")]
+// 	postID, err := strconv.Atoi(postIDStr)
+// 	if err != nil {
+// 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+// 		return
+// 	}
 
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		log.Printf("can't get the cookie: %s\n", err.Error())
-		return
-	}
+// 	cookie, err := r.Cookie("session_token")
+// 	if err != nil {
+// 		log.Printf("can't get the cookie: %s\n", err.Error())
+// 		return
+// 	}
 
-	token := cookie.Value
+// 	token := cookie.Value
 
-	session, err := db.GetSession(token)
-	if err != nil {
-		log.Printf("can't get the session: %s\n", err.Error())
-		return
-	}
-	username := session.User.Username
+// 	session, err := db.GetSession(token)
+// 	if err != nil {
+// 		log.Printf("can't get the session: %s\n", err.Error())
+// 		return
+// 	}
+// 	username := session.User.Username
 
-	comment := r.FormValue("comment")
-	if comment == "" {
-		http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
-		return
-	}
+// 	comment := r.FormValue("comment")
+// 	if strings.TrimSpace(comment) == "" {
+// 		http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
+// 		return
+// 	}
 
-	err = db.AddComment(postID, username, comment)
-	if err != nil {
-		http.Error(w, "Error adding comment", http.StatusInternalServerError)
-		return
-	}
+// 	err = db.AddComment(postID, username, comment)
+// 	if err != nil {
+// 		http.Error(w, "Error adding comment", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	http.Redirect(w, r, "/posts/"+strconv.Itoa(postID), http.StatusSeeOther)
-}
+// 	http.Redirect(w, r, "/posts/"+strconv.Itoa(postID), http.StatusSeeOther)
+// }
 
 func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 	if !LoginGuard(w, r) {
@@ -415,6 +415,10 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		comment := r.FormValue("comment")
+		if strings.TrimSpace(comment) == "" {
+			http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
+			return
+		}
 		cookie, err := r.Cookie("session_token")
 		if err != nil {
 			log.Printf("can't get the cookie: %s\n", err.Error())
@@ -448,7 +452,10 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("title")
 	content := r.FormValue("content")
-
+	if strings.TrimSpace(title) == ""|| strings.TrimSpace(content)== ""{
+		http.Error(w, "The post cant be created without a title or content", http.StatusBadRequest)
+		return
+	}
 	var user structs.User
 	cookie, err := r.Cookie("session_token")
 	if err != nil {

@@ -158,6 +158,13 @@ nav {
 .user-profile {
     display: flex;
     align-items: center;
+    /* margin-bottom: 20px; */
+}
+
+.user-profile-post {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .user-profile img {
@@ -167,17 +174,23 @@ nav {
 }
 
 .user-profile p {
-    margin-bottom: -5px;
     font-weight: 500;
     color: #626262;
 }
 
-.post-input-container {
-    padding-left: 55px;
-    padding-top: 20px;
+.user-profile-post img {
+    width: 45px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
 
-.post-input-container textarea {
+.user-profile-post p {
+    font-weight: 500;
+    color: #626262;
+}
+
+
+textarea {
     margin-bottom: 5%;
     width: 100%;
     border: 0;

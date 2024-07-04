@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.log("Login error:", error);
-                loginError.textContent = "An error occurred: " + error.message;
+                loginError.textContent = "An error occurred : " + error.message; //there is an erroe
                 loginError.style.display = 'block';
             });
     });

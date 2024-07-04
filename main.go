@@ -25,7 +25,7 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/login", server.LoginHandler)                        // ✅
 	http.HandleFunc("/posts/", server.PostHandler)                       // ✅
-	http.HandleFunc("/api/posts/", server.AddCommentHandler)             // ✅
+	// http.HandleFunc("/api/posts/", server.AddCommentHandler)             // ✅
 	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler)   // ✅
 	mux.HandleFunc("/posts/{id}", server.GetPostHandler)                 // ✅
 	mux.HandleFunc("/api/posts/{id}/dislike", server.AddDislikesHandler) // ✅
