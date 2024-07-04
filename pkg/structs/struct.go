@@ -25,7 +25,7 @@ type Comment struct {
 	CreatedDate  time.Time
 	PostID       int
 	Username     string
-	Interactions []Interaction
+	Interactions []CommentInteraction
 }
 
 type Interaction struct {
