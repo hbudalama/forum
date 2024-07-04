@@ -103,7 +103,8 @@
                             </div>
                         </div>
                     </div>
-                    <button href="" onclick="openPostModal('/posts/{{.ID}}')" class="post-title-link">
+                    <button onclick="prepareFrame(event)" href="/posts/{{.ID}}" class="post-title-link">
+
                         <p class="post-text">{{.Title}}</p>
                     </button>
                     <div class="post-row">
@@ -122,16 +123,9 @@
                 </div>
                 {{end}}
                 <footer class="footer">
-                    <button type="button" class="load-more-button">Load more</button>
+                    <!-- <button type="button" class="load-more-button">Load more</button> -->
                 </footer>
             </div>
-        </div>
-    </div>
-    <!-- Modal -->
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closePostModal()">&times;</span>
-            <iframe id="postIframe" src="" width="100%" height="500px"></iframe>
         </div>
     </div>
 </body>
