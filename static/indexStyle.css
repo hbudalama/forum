@@ -358,3 +358,8 @@ button:hover {
     font-weight: bolder;
     color: #9a9a9a;
 }
+
+.post-title-link{
+    color: #ffffff;
+    text-decoration: none;
+}

@@ -73,7 +73,7 @@
                         </div>
                     </div>
                     <form action="/add-post" method="POST">
-                        <textarea name="title" rows="3" placeholder="What's on your mind?" ></textarea>
+                        <textarea name="title" rows="3" placeholder="What's on your mind?"></textarea>
                         <textarea name="content" rows="3" placeholder="Content..."></textarea>
                         <p>Choose a category:</p>
                         <br>
@@ -103,10 +103,11 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="prepareFrame(event)" href="/posts/{{.ID}}" class="post-title-link">
-
-                        <p class="post-text">{{.Title}}</p>
-                    </button>
+                    <a href="/posts/{{.ID}}" class="post-title-link">
+                        <div>
+                            <h2>{{.Title}}</h2>
+                        </div>
+                    </a>
                     <div class="post-row">
                         <div class="activity-icons">
                             <div>
@@ -130,4 +131,5 @@
     </div>
 </body>
 <script src="/static/index.js"></script>
+
 </html>
