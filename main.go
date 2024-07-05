@@ -34,6 +34,8 @@ func main() {
 	mux.HandleFunc("/", server.HomeHandler)                              // ✅
 	mux.HandleFunc("/add-post", server.AddPostsHandler)                  // ✅
 	mux.HandleFunc("/logout", server.LogoutHandler)                      // ✅
+	mux.HandleFunc("/error404",server.Error404Handler)
+	mux.HandleFunc("/error500",server.Error500Handler)
 
 	log.Println("Serving on http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)

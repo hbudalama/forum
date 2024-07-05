@@ -58,7 +58,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	exists, err := db.CheckUsernameExists(username)
 	if err != nil {
-		http.Error(w, `{"reason": "Internal server error"}`, http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 	if exists {
@@ -67,7 +67,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, `{"reason": "internal server error"}`, http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 	_, err = db.AddUser(username, email, string(hashedPassword))
@@ -111,7 +111,7 @@ func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.InsertOrUpdateInteraction(postID, username, 1)
 	if err != nil {
-		http.Error(w, "Failed to add like", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
@@ -149,7 +149,7 @@ func AddDislikesHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.InsertOrUpdateInteraction(postID, username, 0)
 	if err != nil {
-		http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
@@ -186,17 +186,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		exists, err := db.CheckUsernameExists(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking username: %s\n", err.Error())
-			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
+			Error500Handler(w, r)
 			return
 		}
 		if !exists {
-			http.Error(w, `{"reason": "Username not found"}`, http.StatusUnauthorized)
+			Error404Handler(w, r)
 			return
+
 		}
 		passwordMatches, err := db.CheckPassword(username, password)
 		if err != nil {
 			log.Printf("LoginHandler: Error checking password: %s\n", err.Error())
-			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
+			Error500Handler(w, r)
 			return
 		}
 		if !passwordMatches {
@@ -206,7 +207,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		token, err := db.CreateSession(username)
 		if err != nil {
 			log.Printf("LoginHandler: Error creating session: %s\n", err.Error())
-			http.Error(w, `{"reason": "Server error"}`, http.StatusInternalServerError)
+			Error500Handler(w, r)
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
@@ -221,8 +222,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		msg := fmt.Sprintf("Page Not Found, Did you forget to implement: '%s' handler?\n", r.URL.Path)
-		http.Error(w, msg, http.StatusNotFound)
+		// msg := fmt.Sprintf("Page Not Found, Did you forget to implement: '%s' handler?\n", r.URL.Path)
+		// http.Error(w, msg, http.StatusNotFound)
+		Error404Handler(w, r)
+		return
+
 	}
 
 	if !MethodsGuard(w, r, "GET") {
@@ -253,14 +257,14 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
 	if err != nil {
 		log.Printf("can't parse the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error HomeHandler", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
 	err = tmpl.Execute(w, ctx)
 	if err != nil {
 		log.Printf("can't execute the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error HomeHandler", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 }
@@ -289,13 +293,13 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("can't get the cookie: %s\n", err.Error())
-		http.Error(w, "Internal server error LogoutHandler", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 	err = db.DeleteSession(cookie.Value)
 	if err != nil {
 		log.Printf("LogoutHandler: %s", err.Error())
-		http.Error(w, "Internal server error LogoutHandler", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 	// Clear the session cookie
@@ -319,13 +323,13 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	post, err := db.GetPost(postID)
 	if err != nil {
-		http.Error(w, "Post not found", http.StatusNotFound)
+		Error404Handler(w, r)
 		return
 	}
 
 	comments, err := db.GetComments(postID)
 	if err != nil {
-		http.Error(w, "Error retrieving comments", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 	cookie, err := r.Cookie("session_token")
@@ -355,7 +359,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("templates/posts.html")
 	if err != nil {
-		http.Error(w, "Error loading template", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
@@ -436,7 +440,7 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = db.AddComment(postID, username, comment)
 		if err != nil {
-			http.Error(w, "Failed to add comment", http.StatusInternalServerError)
+			Error500Handler(w, r)
 			return
 		}
 
@@ -452,7 +456,7 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("title")
 	content := r.FormValue("content")
-	if strings.TrimSpace(title) == ""|| strings.TrimSpace(content)== ""{
+	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" {
 		http.Error(w, "The post cant be created without a title or content", http.StatusBadRequest)
 		return
 	}
@@ -475,7 +479,7 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.CreatePost(title, content, user.Username)
 	if err != nil {
 		log.Printf("failed to create post: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
@@ -497,13 +501,13 @@ func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	post, err := db.GetPost(postID)
 	if err != nil {
-		http.Error(w, "Post not found", http.StatusNotFound)
+		Error404Handler(w, r)
 		return
 	}
 
 	comments, err := db.GetComments(postID)
 	if err != nil {
-		http.Error(w, "Failed to get comments", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
@@ -532,14 +536,53 @@ func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "posts.html"))
 	if err != nil {
 		log.Printf("can't parse the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
 	}
 
 	err = tmpl.Execute(w, ctx)
 	if err != nil {
 		log.Printf("can't execute the template: %s\n", err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		Error500Handler(w, r)
 		return
+	}
+}
+
+func Error404Handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "error404.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		Error500Handler(w, r)
+	}
+}
+
+
+func Error500Handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "error500.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusInternalServerError)
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		http.Error(w, "Internal Server Error Error500Handler", http.StatusInternalServerError)
 	}
 }
