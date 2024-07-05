@@ -7,7 +7,6 @@
     <title>{{.Post.Title}}</title>
     <link rel="stylesheet" href="/static/posts.css">
     <link rel="stylesheet" href="/static/indexStyle.css">
-
 </head>
 
 <body>
@@ -16,7 +15,6 @@
             <a href="/">
                 <img src="/static/images/logo.png" class="logo">
             </a>
-
             <div class="nav-right">
                 <div class="dropdown">
                     {{if .LoggedInUser}}
@@ -35,15 +33,24 @@
                 </div>
             </div>
         </nav>
+
         <div class="container">
             <div class="post">
                 <h1>{{.Post.Title}}</h1>
                 <p>{{.Post.Content}}</p>
+                <div class="post-info">
+                    <p>Posted by {{.Post.Username}} on {{.Post.CreatedDate.Format "2006-01-02 15:04:05"}}</p>
+                    <p>{{.Post.Likes}} Likes</p>
+                    <p>{{.Post.Dislikes}} Dislikes</p>
+                </div>
                 <hr>
                 <h2>Comments</h2>
                 <ul>
                     {{range .Comments}}
-                    <li>{{.Username}}: {{.Content}}</li>
+                    <li>
+                        <p><strong>{{.Username}}:</strong> {{.Content}}</p>
+                        <p>{{.CreatedDate.Format "2006-01-02 15:04:05"}}</p>
+                    </li>
                     {{end}}
                 </ul>
                 {{if .LoggedInUser}}
@@ -53,9 +60,7 @@
                 </form>
                 {{else}}
                 <p>
-                    <a href="/login">
-                        Login to add a comment
-                    </a>
+                    <a href="/login">Login to add a comment</a>
                 </p>
                 {{end}}
             </div>
