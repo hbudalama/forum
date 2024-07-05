@@ -44,21 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = '/'; // Redirect to home page
                     return
                 }
-                return response.json()
-
-            })
-            .then(data => {
-                console.log("Login response:", data);
-
-                loginError.textContent = data.reason || "An error occurred during login.";
-                loginError.style.display = 'block';
-
+                throw new Error("something went wrong")
             })
             .catch(error => {
-                console.log("Login error:", error);
-                loginError.textContent = "An error occurred : " + error.message; //there is an erroe
+                console.log("Login error:", error)
+                loginError.textContent = "An error occurred : " + error.message; 
                 loginError.style.display = 'block';
-            });
+            })
+
     });
     registerField.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -97,17 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("please log in")
                     return
                 }
-                return response.json()
-            })
-            .then(data => {
-                console.log("Signup response:", data);
-                registerError.textContent = data.reason || "An error occurred during registration.";
-                registerError.style.display = 'block';
+                throw new Error("something went wrong")
             })
             .catch(error => {
                 console.log("Signup error:", error);
                 registerError.textContent = "An error occurred: " + error;
                 registerError.style.display = 'block';
             });
+
     });
 });
