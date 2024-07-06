@@ -94,23 +94,3 @@ func GetCommentInteractions(commentID int) (likes int, dislikes int, err error) 
 
 	return likes, dislikes, nil
 }
-
-// CREATE TABLE IF NOT EXISTS Comment (
-//     CommentID       INTEGER PRIMARY KEY AUTOINCREMENT,
-//     Content         TEXT NOT NULL,
-//     CreatedDate     DATETIME DEFAULT CURRENT_TIMESTAMP,
-//     PostID          INTEGER,
-//     username        TEXT,
-//     FOREIGN KEY (PostID) REFERENCES Post(PostID),
-//     FOREIGN KEY (username) REFERENCES User(username)
-// );
-
-// type Comment struct {
-//     ID           int
-//     Content      string
-//     CreatedDate  time.Time
-//     PostID       int
-//     Username     string
-//     Likes        int
-//     Dislikes     int
-// }

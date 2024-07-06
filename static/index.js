@@ -26,3 +26,16 @@ function prepareFrame(e) {
     ifrm.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)"; 
     document.body.appendChild(ifrm);
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var myPostsCheckbox = document.getElementById('myPosts');
+    if (myPostsCheckbox) {
+        myPostsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                window.location.href = '/myPosts';
+            } else {
+                window.location.href = '/';
+            }
+        });
+    }
+});

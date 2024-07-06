@@ -25,7 +25,6 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/login", server.LoginHandler)                        // ✅
 	http.HandleFunc("/posts/", server.PostHandler)                       // ✅
-	// http.HandleFunc("/api/posts/", server.AddCommentHandler)             // ✅
 	mux.HandleFunc("/api/posts/{id}/comments", server.CommentsHandler)   // ✅
 	mux.HandleFunc("/posts/{id}", server.GetPostHandler)                 // ✅
 	mux.HandleFunc("/api/posts/{id}/dislike", server.AddDislikesHandler) // ✅
@@ -38,7 +37,8 @@ func main() {
 	mux.HandleFunc("/error500",server.Error500Handler)
 	mux.HandleFunc("/api/comments/{id}/like",server.LikeCommentHandler)
 	mux.HandleFunc("/api/comments/{id}/dislike",server.DislikeCommentHandler)
-
+	mux.HandleFunc("/myPosts",server.MyPostsHandler)
+	
 	log.Println("Serving on http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {

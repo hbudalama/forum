@@ -1,7 +1,9 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
+	"log"
 
 	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 )
@@ -108,4 +110,186 @@ func GetPost(postID int) (structs.Post, error) {
 	}
 
 	return post, nil
+}
+
+func GetPostsByUser(username string) ([]structs.Post, error) {
+	var posts []structs.Post
+
+	rows, err := db.Query("SELECT PostID, Title, Content, CreatedDate, username FROM Post WHERE username = $1", username)
+	if err != nil {
+		return posts, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post structs.Post
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username); err != nil {
+			return posts, err
+		}
+
+		categoryRows, err := db.Query("SELECT CategoryName FROM Category c INNER JOIN PostCategory pc ON c.CategoryID = pc.CategoryID WHERE pc.PostID = $1", post.ID)
+		if err != nil {
+			return posts, err
+		}
+		defer categoryRows.Close()
+
+		for categoryRows.Next() {
+			var category string
+			if err := categoryRows.Scan(&category); err != nil {
+				return posts, err
+			}
+			post.Categories = append(post.Categories, category)
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func GetAllPosts() []structs.Post {
+	var posts []structs.Post
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+	rows, err := db.Query(`
+	SELECT 
+	p.PostID, p.Title, p.Content, p.Username, 
+	IFNULL(likes.likes, 0) as likes, 
+	IFNULL(dislikes.dislikes, 0) as dislikes, 
+	IFNULL(comments.comments, 0) as comments
+	FROM post p
+	LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM interaction WHERE Kind = 1 GROUP BY PostID) likes 
+	ON p.PostID = likes.PostID
+	LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
+	ON p.PostID = dislikes.PostID
+	LEFT JOIN (SELECT PostID, COUNT(*) as comments FROM comment GROUP BY PostID) comments
+	ON p.PostID = comments.PostID
+	ORDER BY p.CreatedDate DESC 
+    `)
+	if err != nil {
+		log.Printf("Query error: %s", err)
+		return []structs.Post{}
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post structs.Post
+		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Username, &post.Likes, &post.Dislikes, &post.Comments)
+		if err != nil {
+			log.Printf("Scan error: %s", err)
+			continue
+		}
+		posts = append(posts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows error: %s", err)
+		return []structs.Post{}
+	}
+	// fmt.Printf("%+v\n", posts)
+	return posts
+}
+
+func GetFilteredPosts(categories []string) ([]structs.Post, error) {
+	var filteredPosts []structs.Post
+
+	query := `
+		SELECT p.PostID, p.Title, p.Content, p.Username, 
+		IFNULL(likes.likes, 0) as likes, 
+		IFNULL(dislikes.dislikes, 0) as dislikes, 
+		IFNULL(comments.comments, 0) as comments
+		FROM post p
+		LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM interaction WHERE Kind = 1 GROUP BY PostID) likes 
+		ON p.PostID = likes.PostID
+		LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
+		ON p.PostID = dislikes.PostID
+		LEFT JOIN (SELECT PostID, COUNT(*) as comments FROM comment GROUP BY PostID) comments
+		ON p.PostID = comments.PostID
+		INNER JOIN PostCategory pc ON p.PostID = pc.PostID
+		INNER JOIN Category c ON pc.CategoryID = c.CategoryID
+		WHERE c.CategoryName IN (?)
+		GROUP BY p.PostID
+		ORDER BY p.CreatedDate DESC`
+
+	args := make([]interface{}, len(categories))
+	for i, v := range categories {
+		args[i] = v
+	}
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		log.Printf("Query error: %s", err)
+		return []structs.Post{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post structs.Post
+		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Username, &post.Likes, &post.Dislikes, &post.Comments)
+		if err != nil {
+			log.Printf("Scan error: %s", err)
+			continue
+		}
+		filteredPosts = append(filteredPosts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows error: %s", err)
+		return []structs.Post{}, err
+	}
+
+	return filteredPosts, nil
+}
+
+
+func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, []structs.Interaction) {
+	var (
+		thisPost          structs.Post
+		thisUser          structs.User
+		theseComments     []structs.Comment
+		theseInteractions []structs.Interaction
+	)
+
+	err := db.QueryRow("SELECT * FROM post WHERE id = $1", postId).Scan(&thisPost.ID, &thisPost.Title, &thisPost.Content, &thisPost.Categories)
+
+	if err != nil {
+		return structs.Post{}, structs.User{}, []structs.Comment{}, []structs.Interaction{}
+	}
+
+	return thisPost, thisUser, theseComments, theseInteractions
+}
+
+func InsertOrUpdateInteraction(postID int, username string, kind int) error {
+	var existingKind int
+	err := db.QueryRow("SELECT Kind FROM Interaction WHERE PostID = ? AND Username = ?", postID, username).Scan(&existingKind)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No existing interaction, insert a new one
+			_, err = db.Exec(
+				"INSERT INTO Interaction (PostID, Username, Kind) VALUES (?, ?, ?)",
+				postID, username, kind,
+			)
+			if err != nil {
+				log.Printf("InsertInteraction error: %s", err)
+				return err
+			}
+		} else {
+			// Some other error occurred
+			log.Printf("Query error: %s", err)
+			return err
+		}
+	} else {
+		// Existing interaction found, update it if necessary
+		if existingKind != kind {
+			_, err = db.Exec(
+				"UPDATE Interaction SET Kind = ? WHERE PostID = ? AND Username = ?",
+				kind, postID, username,
+			)
+			if err != nil {
+				log.Printf("UpdateInteraction error: %s", err)
+				return err
+			}
+		}
+	}
+	return nil
 }
