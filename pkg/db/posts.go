@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 
 	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 )
@@ -85,23 +84,6 @@ func Interact(post int, username string, interaction int) error {
 	return nil
 }
 
-func AddComment(PostID int, username string, Content string) error {
-	fmt.Println("i am here 1")
-	// if !postExists(PostID) {
-	// 	return errors.New("post does not exist")
-	// }   this  vis not working
-	fmt.Println("i am here nowww ")
-
-	_, err := db.Exec("INSERT INTO Comment (PostID, username, Content) VALUES ($1, $2, $3)", PostID, username, Content)
-	fmt.Println("i am here at end")
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func GetPost(postID int) (structs.Post, error) {
 	var post structs.Post
 
@@ -126,24 +108,4 @@ func GetPost(postID int) (structs.Post, error) {
 	}
 
 	return post, nil
-}
-
-func GetComments(postID int) ([]structs.Comment, error) {
-	var comments []structs.Comment
-
-	rows, err := db.Query("SELECT CommentID, Content, CreatedDate, PostID, username FROM Comment WHERE PostID = $1", postID)
-	if err != nil {
-		return comments, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var comment structs.Comment
-		if err := rows.Scan(&comment.ID, &comment.Content, &comment.CreatedDate, &comment.PostID, &comment.Username); err != nil {
-			return comments, err
-		}
-		comments = append(comments, comment)
-	}
-
-	return comments, nil
 }

@@ -21,12 +21,13 @@ type Post struct {
 }
 
 type Comment struct {
-	ID           int
-	Content      string
-	CreatedDate  time.Time
-	PostID       int
-	Username     string
-	Interactions []CommentInteraction
+    ID           int
+    Content      string
+    CreatedDate  time.Time
+    PostID       int
+    Username     string
+    Likes        int
+    Dislikes     int
 }
 
 type Interaction struct {

@@ -567,7 +567,6 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func Error500Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -585,4 +584,72 @@ func Error500Handler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("can't execute the template: %s\n", err.Error())
 		http.Error(w, "Internal Server Error Error500Handler", http.StatusInternalServerError)
 	}
+}
+
+func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	commentIDStr := r.PathValue("id")
+
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		return
+	}
+
+	var user structs.User
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user = session.User
+
+	err = db.AddCommentInteraction(commentID, user.Username, 1)
+	if err != nil {
+		http.Error(w, "Unable to like comment", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, r.Referer(), http.StatusFound)
+}
+
+func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	commentIDStr := r.PathValue("id")
+
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		return
+	}
+
+	var user structs.User
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user = session.User
+
+	err = db.AddCommentInteraction(commentID, user.Username, 0)
+	if err != nil {
+		http.Error(w, "Unable to dislike comment", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, r.Referer(), http.StatusFound)
 }
