@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -418,10 +419,15 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("title")
 	content := r.FormValue("content")
-	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" {
-		http.Error(w, "The post cant be created without a title or content", http.StatusBadRequest)
+	categories := r.Form["category"] // Get the categories from the form
+
+	log.Printf("Received categories: %v\n", categories) // Debug print
+
+	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" || len(categories) == 0 {
+		http.Error(w, "The post must have a title, content, and at least one category", http.StatusBadRequest)
 		return
 	}
+
 	var user structs.User
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -438,15 +444,26 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user = session.User
 
-	err = db.CreatePost(title, content, user.Username)
+	postID, err := db.CreatePost(title, content, user.Username)
 	if err != nil {
 		log.Printf("failed to create post: %s\n", err.Error())
 		Error500Handler(w, r)
 		return
 	}
 
+	log.Printf("Created post with ID: %d\n", postID) // Debug print
+
+	// Save the categories for the post
+	err = db.AddPostCategories(postID, categories)
+	if err != nil {
+		log.Printf("failed to add categories to post: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
 
 func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -648,4 +665,53 @@ func MyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, context)
 }
 
+func FilterPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if !MethodsGuard(w, r, "POST") {
+		Error404Handler(w, r)
+		return
+	}
 
+	var filterData struct {
+		Categories []string        `json:"categories"`
+		Criteria   map[string]bool `json:"criteria"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&filterData); err != nil {
+		http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
+		return
+	}
+
+	var posts []structs.Post
+	var err error
+
+	if len(filterData.Categories) > 0 {
+		posts, err = db.GetFilteredPosts(filterData.Categories)
+		if err != nil {
+			Error500Handler(w, r)
+			return
+		}
+	} else {
+		posts = db.GetAllPosts()
+	}
+
+	if filterData.Criteria["mostLiked"] {
+		sort.Slice(posts, func(i, j int) bool {
+			return posts[i].Likes > posts[j].Likes
+		})
+	} else if filterData.Criteria["newest"] {
+		sort.Slice(posts, func(i, j int) bool {
+			return posts[i].CreatedDate.After(posts[j].CreatedDate)
+		})
+	}
+
+	response := struct {
+		Posts []structs.Post `json:"posts"`
+	}{
+		Posts: posts,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		Error500Handler(w, r)
+	}
+}

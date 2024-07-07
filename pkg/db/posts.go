@@ -47,15 +47,29 @@ func isOwner(post int, username string) bool {
 	return status
 }
 
-func CreatePost(title string, content string, username string) error {
-	_, err := db.Exec("INSERT INTO post (Title, Content, username) VALUES ($1, $2, $3)", title, content, username)
+// func CreatePost(title string, content string, username string) error {
+// 	_, err := db.Exec("INSERT INTO post (Title, Content, username) VALUES ($1, $2, $3)", title, content, username)
+
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+func CreatePost(title, content, username string) (int, error) {
+	var postID int
+	err := db.QueryRow(`
+		INSERT INTO post (Title, Content, Username) 
+		VALUES ($1, $2, $3) RETURNING PostID`, title, content, username).Scan(&postID)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return postID, nil
 }
+
 
 func DeletePost(id int, user string) error {
 	if !postExists(id) || !isOwner(id, user) {
@@ -189,7 +203,6 @@ func GetAllPosts() []structs.Post {
 	// fmt.Printf("%+v\n", posts)
 	return posts
 }
-
 func GetFilteredPosts(categories []string) ([]structs.Post, error) {
 	var filteredPosts []structs.Post
 
@@ -242,6 +255,7 @@ func GetFilteredPosts(categories []string) ([]structs.Post, error) {
 }
 
 
+
 func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, []structs.Interaction) {
 	var (
 		thisPost          structs.Post
@@ -289,6 +303,31 @@ func InsertOrUpdateInteraction(postID int, username string, kind int) error {
 				log.Printf("UpdateInteraction error: %s", err)
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func AddPostCategories(postID int, categories []string) error {
+	for _, category := range categories {
+		var categoryID int
+		err := db.QueryRow(`
+			INSERT INTO Category (CategoryName)
+			VALUES ($1)
+			ON CONFLICT(CategoryName) DO UPDATE SET CategoryName=excluded.CategoryName
+			RETURNING CategoryID`, category).Scan(&categoryID)
+		if err != nil {
+			log.Printf("Error inserting/fetching category: %s\n", err.Error()) // Debug print
+			return err
+		}
+
+		log.Printf("Linking category %d to post %d\n", categoryID, postID) // Debug print
+		_, err = db.Exec(`
+			INSERT INTO PostCategory (PostID, CategoryID)
+			VALUES ($1, $2)`, postID, categoryID)
+		if err != nil {
+			log.Printf("Error linking category to post: %s\n", err.Error()) // Debug print
+			return err
 		}
 	}
 	return nil
