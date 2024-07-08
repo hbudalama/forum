@@ -70,7 +70,6 @@ func CreatePost(title, content, username string) (int, error) {
 	return postID, nil
 }
 
-
 func DeletePost(id int, user string) error {
 	if !postExists(id) || !isOwner(id, user) {
 		return errors.New("post does not exist")
@@ -254,8 +253,6 @@ func GetFilteredPosts(categories []string) ([]structs.Post, error) {
 	return filteredPosts, nil
 }
 
-
-
 func GetPostDetails(postId int) (structs.Post, structs.User, []structs.Comment, []structs.Interaction) {
 	var (
 		thisPost          structs.Post
@@ -292,12 +289,22 @@ func InsertOrUpdateInteraction(postID int, username string, kind int) error {
 			log.Printf("Query error: %s", err)
 			return err
 		}
-	} else {
+	} else { //if no errors
 		// Existing interaction found, update it if necessary
 		if existingKind != kind {
 			_, err = db.Exec(
 				"UPDATE Interaction SET Kind = ? WHERE PostID = ? AND Username = ?",
 				kind, postID, username,
+			)
+			if err != nil {
+				log.Printf("UpdateInteraction error: %s", err)
+				return err
+			}
+		} else {
+			//if the interaction is the same
+			_, err = db.Exec(
+				"DELETE FROM Interaction WHERE PostID = ? AND Username = ?",
+				postID, username,
 			)
 			if err != nil {
 				log.Printf("UpdateInteraction error: %s", err)
@@ -418,28 +425,28 @@ func GetMostLikedPosts() ([]structs.Post, error) {
 }
 
 func GetLikedPostsByUser(username string) ([]structs.Post, error) {
-    var posts []structs.Post
+	var posts []structs.Post
 
-    rows, err := db.Query(`
+	rows, err := db.Query(`
         SELECT p.PostID, p.Title, p.Content, p.CreatedDate, p.username
         FROM Post p
         INNER JOIN Interaction i ON p.PostID = i.PostID
         WHERE i.username = $1 AND i.Kind = 1
     `, username)
-    if err != nil {
-        return posts, err
-    }
-    defer rows.Close()
+	if err != nil {
+		return posts, err
+	}
+	defer rows.Close()
 
-    for rows.Next() {
-        var post structs.Post
-        if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username); err != nil {
-            return posts, err
-        }
-        posts = append(posts, post)
-    }
+	for rows.Next() {
+		var post structs.Post
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username); err != nil {
+			return posts, err
+		}
+		posts = append(posts, post)
+	}
 
-    return posts, rows.Err()
+	return posts, rows.Err()
 }
 
 func GetPost(postID int) (structs.Post, error) {
