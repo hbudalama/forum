@@ -110,6 +110,9 @@
                             <p>{{ .LoggedInUser.Username }}</p>
                         </div>
                     </div>
+                    {{if .ErrorMessage}}
+                    <div class="error-message">{{.ErrorMessage}}</div>
+                    {{end}}
                     <form action="/add-post" method="POST">
                         <textarea name="title" rows="3" placeholder="What's on your mind?"></textarea>
                         <textarea name="content" rows="3" placeholder="Content..."></textarea>
@@ -193,4 +196,4 @@
 
 <script src="/static/index.js"></script>
 
-</html>-
+</html>

@@ -369,3 +369,8 @@ button:hover {
     margin-bottom: 16px;
     padding: 4px;
 }
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+}

@@ -49,6 +49,7 @@ type Session struct {
 type HomeContext struct {
 	LoggedInUser *User
 	Posts        []Post
+	ErrorMessage string
 }
 
 type PostContext struct {

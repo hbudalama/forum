@@ -21,27 +21,29 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if !MethodsGuard(w, r, "POST") {
 		return
 	}
-	// username := r.FormValue("username")
-	// email := r.FormValue("email")
-	// password := r.FormValue("password")
+
 	var requestData struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Username        string `json:"username"`
+		Email           string `json:"email"`
+		Password        string `json:"password"`
+		ConfirmPassword string `json:"confirmPassword"`
 	}
-	// Decode the JSON request body
+
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
 		http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
 		return
 	}
-	username := requestData.Username
-	email := requestData.Email
-	password := requestData.Password
-	if strings.TrimSpace(username) == "" {
-		http.Error(w, `{"reason": "User ID is required"}`, http.StatusBadRequest)
+
+	username := strings.TrimSpace(requestData.Username)
+	email := strings.TrimSpace(requestData.Email)
+	password := strings.TrimSpace(requestData.Password)
+	confirmPassword := strings.TrimSpace(requestData.ConfirmPassword)
+
+	if username == "" {
+		http.Error(w, `{"reason": "Username is required"}`, http.StatusBadRequest)
 		return
 	}
-	if strings.TrimSpace(email) == "" {
+	if email == "" {
 		http.Error(w, `{"reason": "Email is required"}`, http.StatusBadRequest)
 		return
 	}
@@ -49,14 +51,19 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"reason": "Invalid email format"}`, http.StatusBadRequest)
 		return
 	}
-	if strings.TrimSpace(password) == "" {
+	if password == "" {
 		http.Error(w, `{"reason": "Password is required"}`, http.StatusBadRequest)
 		return
 	}
 	if !validatePassword(password) {
-		http.Error(w, `{"reason": "Password must be at least 8 characters long "}`, http.StatusBadRequest)
+		http.Error(w, `{"reason": "Password must be at least 8 characters long"}`, http.StatusBadRequest)
 		return
 	}
+	if password != confirmPassword {
+		http.Error(w, `{"reason": "Passwords do not match"}`, http.StatusBadRequest)
+		return
+	}
+
 	exists, err := db.CheckUsernameExists(username)
 	if err != nil {
 		Error500Handler(w, r)
@@ -66,6 +73,17 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"reason": "Username already taken"}`, http.StatusBadRequest)
 		return
 	}
+
+	emailExists, err := db.CheckEmailExists(email)
+	if err != nil {
+		Error500Handler(w, r)
+		return
+	}
+	if emailExists {
+		http.Error(w, `{"reason": "Email already taken"}`, http.StatusBadRequest)
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		Error500Handler(w, r)
@@ -78,7 +96,11 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		println(err.Error())
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+	})
 }
 
 func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
@@ -191,9 +213,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !exists {
-			Error404Handler(w, r)
+			http.Error(w, `{"reason": "Username does not exist"}`, http.StatusUnauthorized)
 			return
-
 		}
 		passwordMatches, err := db.CheckPassword(username, password)
 		if err != nil {
@@ -217,23 +238,26 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			Expires:  time.Now().Add(24 * time.Hour),
 			HttpOnly: true,
 		})
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+		})
+		return
 	}
 	http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		// msg := fmt.Sprintf("Page Not Found, Did you forget to implement: '%s' handler?\n", r.URL.Path)
-		// http.Error(w, msg, http.StatusNotFound)
 		Error404Handler(w, r)
 		return
-
 	}
 
 	if !MethodsGuard(w, r, "GET") {
-		http.Error(w, "Method Not Allowed HomeHandler", http.StatusMethodNotAllowed)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	ctx := structs.HomeContext{}
 	if LoginGuard(w, r) {
 		cookie, err := r.Cookie("session_token")
@@ -249,7 +273,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("can't get the session: %s\n", err.Error())
 			return
 		}
-		fmt.Printf("Fick this shot: %+v\n", session.User)
 		ctx.LoggedInUser = &session.User
 	}
 
@@ -314,6 +337,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	w.WriteHeader(http.StatusOK)
 }
+
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	postIDStr := r.URL.Path[len("/posts/"):]
 	postID, err := strconv.Atoi(postIDStr)
@@ -321,13 +345,11 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
 		return
 	}
-
 	post, err := db.GetPost(postID)
 	if err != nil {
 		Error404Handler(w, r)
 		return
 	}
-
 	comments, err := db.GetComments(postID)
 	if err != nil {
 		Error500Handler(w, r)
@@ -338,16 +360,13 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("can't get the cookie: %s\n", err.Error())
 		return
 	}
-
 	token := cookie.Value
-
 	session, err := db.GetSession(token)
 	if err != nil {
 		log.Printf("can't get the session: %s\n", err.Error())
 		return
 	}
 	user := session.User
-
 	data := struct {
 		Post         structs.Post
 		Comments     []structs.Comment
@@ -357,13 +376,11 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		Comments:     comments,
 		LoggedInUser: &user,
 	}
-
 	tmpl, err := template.ParseFiles("templates/posts.html")
 	if err != nil {
 		Error500Handler(w, r)
 		return
 	}
-
 	tmpl.Execute(w, data)
 }
 
@@ -372,7 +389,6 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
-
 	if r.Method == http.MethodPost {
 		postIDStr := r.URL.Path[len("/api/posts/") : len(r.URL.Path)-len("/comments")]
 		postID, err := strconv.Atoi(postIDStr)
@@ -380,7 +396,6 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
 			return
 		}
-
 		comment := r.FormValue("comment")
 		if strings.TrimSpace(comment) == "" {
 			http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
@@ -391,79 +406,21 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("can't get the cookie: %s\n", err.Error())
 			return
 		}
-
 		token := cookie.Value
 		session, err := db.GetSession(token)
 		if err != nil {
 			log.Printf("can't get the session: %s\n", err.Error())
 			return
 		}
-
 		username := session.User.Username
-
 		err = db.AddComment(postID, username, comment)
 		if err != nil {
 			Error500Handler(w, r)
 			return
 		}
-
 		http.Redirect(w, r, fmt.Sprintf("/posts/%d", postID), http.StatusSeeOther)
 	}
 }
-
-func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
-	if !LoginGuard(w, r) {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-		return
-	}
-
-	title := r.FormValue("title")
-	content := r.FormValue("content")
-	categories := r.Form["category"] // Get the categories from the form
-
-	log.Printf("Received categories: %v\n", categories) // Debug print
-
-	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" || len(categories) == 0 {
-		http.Error(w, "The post must have a title, content, and at least one category", http.StatusBadRequest)
-		return
-	}
-
-	var user structs.User
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		log.Printf("can't get the cookie: %s\n", err.Error())
-		return
-	}
-
-	token := cookie.Value
-
-	session, err := db.GetSession(token)
-	if err != nil {
-		log.Printf("can't get the session: %s\n", err.Error())
-		return
-	}
-	user = session.User
-
-	postID, err := db.CreatePost(title, content, user.Username)
-	if err != nil {
-		log.Printf("failed to create post: %s\n", err.Error())
-		Error500Handler(w, r)
-		return
-	}
-
-	log.Printf("Created post with ID: %d\n", postID) // Debug print
-
-	// Save the categories for the post
-	err = db.AddPostCategories(postID, categories)
-	if err != nil {
-		log.Printf("failed to add categories to post: %s\n", err.Error())
-		Error500Handler(w, r)
-		return
-	}
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
 
 func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -783,6 +740,99 @@ func NewestPostsHandler(w http.ResponseWriter, r *http.Request) {
 				ctx.LoggedInUser = &session.User
 			}
 		}
+	}
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	err = tmpl.Execute(w, ctx)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+}
+
+func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if !LoginGuard(w, r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+	categories := r.Form["category"] // Get the categories from the form
+
+	log.Printf("Received categories: %v\n", categories) // Debug print
+
+	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" || len(categories) == 0 {
+		RenderAddPostForm(w, r, "The post must have a title, content, and at least one category")
+		return
+	}
+
+	var user structs.User
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		log.Printf("can't get the cookie: %s\n", err.Error())
+		return
+	}
+
+	token := cookie.Value
+
+	session, err := db.GetSession(token)
+	if err != nil {
+		log.Printf("can't get the session: %s\n", err.Error())
+		return
+	}
+	user = session.User
+
+	postID, err := db.CreatePost(title, content, user.Username)
+	if err != nil {
+		log.Printf("failed to create post: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	log.Printf("Created post with ID: %d\n", postID) // Debug print
+
+	// Save the categories for the post
+	err = db.AddPostCategories(postID, categories)
+	if err != nil {
+		log.Printf("failed to add categories to post: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func RenderAddPostForm(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	var user structs.User
+	if LoginGuard(w, r) {
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			log.Printf("can't get the cookie: %s\n", err.Error())
+			return
+		}
+
+		token := cookie.Value
+
+		session, err := db.GetSession(token)
+		if err != nil {
+			log.Printf("can't get the session: %s\n", err.Error())
+			return
+		}
+		user = session.User
+	}
+
+	ctx := structs.HomeContext{
+		LoggedInUser: &user,
+		ErrorMessage: errorMessage,
+		Posts:        db.GetAllPosts(),
 	}
 
 	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))

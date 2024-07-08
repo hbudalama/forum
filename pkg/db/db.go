@@ -85,3 +85,17 @@ func CheckPassword(username, password string) (bool, error) {
 	}
 	return true, nil
 }
+
+func CheckEmailExists(email string) (bool, error) {
+	var foundEmail string
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+	err := db.QueryRow("SELECT email FROM user WHERE email = ?", email).Scan(&foundEmail)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
