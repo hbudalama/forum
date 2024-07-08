@@ -961,16 +961,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        activeSession, err := db.CheckActiveSession(username)
-        if err != nil {
-            log.Printf("LoginHandler: Error checking active session: %s\n", err.Error())
-            Error500Handler(w, r)
-            return
-        }
-        if activeSession {
-            http.Error(w, `{"reason": "User already logged in"}`, http.StatusConflict)
-            return
-        }
+        // activeSession, err := db.CheckActiveSession(username)
+        // if err != nil {
+        //     log.Printf("LoginHandler: Error checking active session: %s\n", err.Error())
+        //     Error500Handler(w, r)
+        //     return
+        // }
+        // if activeSession {
+        //     http.Error(w, `{"reason": "User already logged in"}`, http.StatusConflict)
+        //     return
+        // }
 
         exists, err := db.CheckUsernameExists(username)
         if err != nil {
@@ -979,7 +979,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
             return
         }
         if !exists {
-            Error404Handler(w, r)
+            http.Error(w, `{"reason": "Username not found"}`, http.StatusNotFound)
             return
         }
         passwordMatches, err := db.CheckPassword(username, password)
@@ -1005,7 +1005,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
             Expires:  time.Now().Add(24 * time.Hour),
             HttpOnly: true,
         })
+
+        w.Header().Set("Content-Type", "application/json")
+        w.Write([]byte(`{"message": "Login successful"}`))
+        return
     }
     http.ServeFile(w, r, filepath.Join("pages", "login.html"))
 }
-

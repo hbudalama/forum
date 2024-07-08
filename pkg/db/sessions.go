@@ -60,18 +60,18 @@ func DeleteSession(token string) error {
 // 	return sessionExpiration.After(time.Now()), nil
 // }
 
-func CheckActiveSession(username string) (bool, error) {
-	var sessionExpiration sql.NullTime
-	err := db.QueryRow(`SELECT sessionExpiration FROM User WHERE username = ?`, username).Scan(&sessionExpiration)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, err
-	}
+// func CheckActiveSession(username string) (bool, error) {
+// 	var sessionExpiration sql.NullTime
+// 	err := db.QueryRow(`SELECT sessionExpiration FROM User WHERE username = ?`, username).Scan(&sessionExpiration)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return false, nil
+// 		}
+// 		return false, err
+// 	}
 
-	if sessionExpiration.Valid {
-		return sessionExpiration.Time.After(time.Now()), nil
-	}
-	return false, nil
-}
+// 	if sessionExpiration.Valid {
+// 		return sessionExpiration.Time.After(time.Now()), nil
+// 	}
+// 	return false, nil
+// }

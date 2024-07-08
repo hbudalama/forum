@@ -19,8 +19,19 @@ func LoginGuard(w http.ResponseWriter, r *http.Request) bool {
 
 	session, err := db.GetSession(token)
 	if err != nil || session == nil {
+		// delete old cookie
 		return false
 	}
+
+	// exist, err := db.CheckUsernameExists(session.User.Username)
+	// if err != nil {
+	// 	log.Printf("LoginGuard: Error checking username: %s\n", err.Error())
+	// 	return
+	// }
+
+	// if exist && session.Expiry.Before(time.Now()){
+	// 	log.Printf("LoginGuard: Error checking username: %s\n", err.Error())
+	// }
 
 	if session.Expiry.Before(time.Now()) {
 		db.DeleteSession(token)
