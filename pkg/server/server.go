@@ -523,6 +523,11 @@ func Error500Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	commentIDStr := r.PathValue("id")
 
 	commentID, err := strconv.Atoi(commentIDStr)
@@ -532,7 +537,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user structs.User
-	cookie, err := r.Cookie("session_token")
+	cookie, err = r.Cookie("session_token")
 	if err != nil {
 		log.Printf("can't get the cookie: %s\n", err.Error())
 		return
@@ -557,6 +562,11 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	commentIDStr := r.PathValue("id")
 
 	commentID, err := strconv.Atoi(commentIDStr)
@@ -566,7 +576,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user structs.User
-	cookie, err := r.Cookie("session_token")
+	cookie, err = r.Cookie("session_token")
 	if err != nil {
 		log.Printf("can't get the cookie: %s\n", err.Error())
 		return
