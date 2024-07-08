@@ -89,19 +89,23 @@
                                 Newest
                             </label>
                         </li>
+                        {{if .LoggedInUser}}
                         <li>
                             <input type="checkbox" id="myPosts" name="createdPosts" value="myPosts">
                             <label for="myPosts">
                                 My Posts
                             </label>
-                            <li>
-                                <input type="checkbox" id="Mylikedposts" name="createdPosts" value="myLikedPosts">
-                                <label for="myLikedPosts">
-                                    my Liked Posts
-                                </label>
-                            </li>
-    
                         </li>
+                        <li>
+                            <input type="checkbox" id="Mylikedposts" name="createdPosts" value="myLikedPosts">
+                            <label for="myLikedPosts">
+                                My Liked Posts
+                            </label>
+                        </li>
+                        
+                        {{end}}
+    
+
                     </ul>
                 </div>
             </div>
@@ -120,7 +124,7 @@
                     {{if .ErrorMessage}}
                     <div class="error-message">{{.ErrorMessage}}</div>
                     {{end}}
-                    <form action="/add-post" method="POST">
+                    <form action="/add-post" method="POST" onsubmit="return validateForm()">
                         <textarea name="title" rows="3" placeholder="What's on your mind?"></textarea>
                         <textarea name="content" rows="3" placeholder="Content..."></textarea>
                         <p>Choose a category:</p>

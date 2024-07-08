@@ -168,4 +168,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-
+function validateForm() {
+    var checkboxes = document.querySelectorAll('input[name="category"]:checked');
+    if (checkboxes.length === 0) {
+        alert("Please select at least one category.");
+        return false;
+    }
+    return true;
+}

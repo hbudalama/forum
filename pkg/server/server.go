@@ -590,23 +590,22 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, r.Referer(), http.StatusFound)
 }
 
-func MyPostsHandler(w http.ResponseWriter, r *http.Request) {
 
-	var user structs.User
+func MyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		log.Printf("can't get the cookie: %s\n", err.Error())
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
 	token := cookie.Value
-
 	session, err := db.GetSession(token)
 	if err != nil {
-		log.Printf("can't get the session: %s\n", err.Error())
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	user = session.User
+
+	user := session.User
 	posts, err := db.GetPostsByUser(user.Username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -621,6 +620,7 @@ func MyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("pages/myposts.html"))
 	tmpl.Execute(w, context)
 }
+
 
 func FilterPostsHandler(w http.ResponseWriter, r *http.Request) {
 	if !MethodsGuard(w, r, "POST") {
@@ -902,40 +902,36 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
     tmpl.Execute(w, data)
 }
 
-
-
-
 func MyLikedPostsHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 
-    var user structs.User
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        log.Printf("can't get the cookie: %s\n", err.Error())
-        return
-    }
+	token := cookie.Value
+	session, err := db.GetSession(token)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 
-    token := cookie.Value
+	user := session.User
+	posts, err := db.GetLikedPostsByUser(user.Username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    session, err := db.GetSession(token)
-    if err != nil {
-        log.Printf("can't get the session: %s\n", err.Error())
-        return
-    }
-    user = session.User
-    posts, err := db.GetLikedPostsByUser(user.Username)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	context := structs.HomeContext{
+		LoggedInUser: &user,
+		Posts:        posts,
+	}
 
-    context := structs.HomeContext{
-        LoggedInUser: &user,
-        Posts:        posts,
-    }
-
-    tmpl := template.Must(template.ParseFiles("pages/myLikedPosts.html"))
-    tmpl.Execute(w, context)
+	tmpl := template.Must(template.ParseFiles("pages/myLikedPosts.html"))
+	tmpl.Execute(w, context)
 }
+
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
     if !MethodsGuard(w, r, "GET", "POST") {
