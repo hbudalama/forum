@@ -775,7 +775,7 @@ func AddPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("title")
 	content := r.FormValue("content")
-	categories := r.Form["category"] // Get the categories from the form
+	categories := r.Form["post-category"] // Get the categories from the form
 
 	log.Printf("Received categories: %v\n", categories) // Debug print
 
