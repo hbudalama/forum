@@ -1,45 +1,3 @@
-function logoutHandler(e) {
-    fetch('/logout', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-        .then(response => {
-            window.location.href = ('/login')
-        })
-
-}
-
-function prepareFrame(e) {
-    const ifrm = document.createElement("iframe");
-    ifrm.setAttribute("src", "/posts/1");
-    ifrm.style.width = "640px";
-    ifrm.style.height = "480px";
-    ifrm.style.position = "fixed";
-    ifrm.style.top = "50%";
-    ifrm.style.left = "50%";
-    ifrm.style.transform = "translate(-50%, -50%)";
-    ifrm.style.backgroundColor = "white";
-    ifrm.style.zIndex = 101;
-    ifrm.style.border = "1px solid #ccc";
-    ifrm.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
-    document.body.appendChild(ifrm);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('myPosts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/myPosts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
-
 document.addEventListener('DOMContentLoaded', function () {
     const filterSection = document.querySelector('.filter-section');
     filterSection.addEventListener('change', applyFilters);
@@ -50,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         filterSection.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             if (checkbox.checked) {
-                if (checkbox.name === 'category') {
+                if (checkbox.name === 'filter-category') {
                     selectedCategories.push(checkbox.value);
                 } else {
                     selectedCriteria[checkbox.value] = true;
@@ -94,20 +52,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="activity-icons">
                             <div>
                                 <a href="/api/posts/${post.ID}/like">
-                                    <i class="fa fa-thumbs-up icon"></i>
-                                    ${post.Likes}
+                                    <i class="fa fa-thumbs-up icon"></i>${post.Likes}
                                 </a>
                             </div>
                             <div>
                                 <a href="/api/posts/${post.ID}/dislike">
-                                    <i class="fa fa-thumbs-down icon"></i>
-                                    ${post.Dislikes}
+                                    <i class="fa fa-thumbs-down icon"></i>${post.Dislikes}
                                 </a>
                             </div>
                             <div>
                                 <a href="/posts/${post.ID}">
-                                    <i class="fa fa-comment icon"></i>
-                                    ${post.Comments}
+                                    <i class="fa fa-comment icon"></i>${post.Comments}
                                 </a>
                             </div>
                         </div>
@@ -122,6 +77,28 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
+    var myPostsCheckbox = document.getElementById('myPosts');
+    if (myPostsCheckbox) {
+        myPostsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                window.location.href = '/myPosts';
+            } else {
+                window.location.href = '/';
+            }
+        });
+    }
+
+    var myLikedPostsCheckbox = document.getElementById('Mylikedposts');
+    if (myLikedPostsCheckbox) {
+        myLikedPostsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                window.location.href = '/Mylikedposts';
+            } else {
+                window.location.href = '/';
+            }
+        });
+    }
+
     // Event listener for most liked filter
     document.getElementById('mostLiked').addEventListener('change', function () {
         if (this.checked) {
@@ -141,35 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('Mylikedposts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/Mylikedposts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('myPosts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/myPosts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
-
 function validateForm() {
-    var checkboxes = document.querySelectorAll('input[name="category"]:checked');
+    var checkboxes = document.querySelectorAll('input[name="post-category"]:checked');
     if (checkboxes.length === 0) {
         alert("Please select at least one category.");
         return false;

@@ -20,8 +20,7 @@
             <div class="nav-right">
                 <div class="dropdown">
                     {{if .LoggedInUser }}
-                    <div class="online">
-                    </div>
+                    <div class="online"></div>
                     {{end}}
                     <div class="user-icon">
                         <img src="/static/images/user.png" class="profile-image">
@@ -41,79 +40,51 @@
             <!-- Left sidebar -->
             <div class="left-sidebar">
                 <div class="filter-section">
-                    <h3>
-                        Categories
-                    </h3>
+                    <h3>Categories</h3>
                     <ul>
                         <li>
-                            <input type="checkbox" id="education" name="category" value="education">
-                            <label for="education">
-                                Education
-                            </label>
+                            <input type="checkbox" id="filter-education" name="filter-category" value="education">
+                            <label for="filter-education">Education</label>
                         </li>
                         <li>
-                            <input type="checkbox" id="entertainment" name="category" value="entertainment">
-                            <label for="entertainment">
-                                Entertainment
-                            </label>
+                            <input type="checkbox" id="filter-entertainment" name="filter-category" value="entertainment">
+                            <label for="filter-entertainment">Entertainment</label>
                         </li>
                         <li>
-                            <input type="checkbox" id="sports" name="category" value="sports">
-                            <label for="sports">
-                                Sports
-                            </label>
+                            <input type="checkbox" id="filter-sports" name="filter-category" value="sports">
+                            <label for="filter-sports">Sports</label>
                         </li>
                         <li>
-                            <input type="checkbox" id="news" name="category" value="news">
-                            <label for="news">
-                                News
-                            </label>
+                            <input type="checkbox" id="filter-news" name="filter-category" value="news">
+                            <label for="filter-news">News</label>
                         </li>
                     </ul>
                 </div>
 
                 <div class="filter-section">
-                    <h3>
-                        Created Posts
-                    </h3>
+                    <h3>Created Posts</h3>
                     <ul>
                         <li>
                             <input type="checkbox" id="mostLiked" name="createdPosts" value="mostLiked">
-                            <label for="mostLiked">
-                                Most Liked
-                            </label>
+                            <label for="mostLiked">Most Liked</label>
                         </li>
-                        <!-- <li>
-                            <input type="checkbox" id="newest" name="createdPosts" value="newest">
-                            <label for="newest">
-                                Newest
-                            </label>
-                        </li> -->
                         {{if .LoggedInUser}}
                         <li>
                             <input type="checkbox" id="myPosts" name="createdPosts" value="myPosts">
-                            <label for="myPosts">
-                                My Posts
-                            </label>
+                            <label for="myPosts">My Posts</label>
                         </li>
                         <li>
                             <input type="checkbox" id="Mylikedposts" name="createdPosts" value="myLikedPosts">
-                            <label for="myLikedPosts">
-                                My Liked Posts
-                            </label>
+                            <label for="myLikedPosts">My Liked Posts</label>
                         </li>
-                        
                         {{end}}
-    
-
                     </ul>
                 </div>
             </div>
 
             <!-- Main content -->
-
             <div class="main-content">
-                {{ if .LoggedInUser}}
+                {{if .LoggedInUser}}
                 <div class="post-container">
                     <div class="user-profile-post">
                         <img src="/static/images/user.png">
@@ -131,20 +102,20 @@
                         <br>
                         <ul>
                             <li>
-                                <input type="checkbox" id="education" name="category" value="education">
-                                <label for="education">Education</label>
+                                <input type="checkbox" id="post-education" name="post-category" value="education">
+                                <label for="post-education">Education</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="entertainment" name="category" value="entertainment">
-                                <label for="entertainment">Entertainment</label>
+                                <input type="checkbox" id="post-entertainment" name="post-category" value="entertainment">
+                                <label for="post-entertainment">Entertainment</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="sports" name="category" value="sports">
-                                <label for="sports">Sports</label>
+                                <input type="checkbox" id="post-sports" name="post-category" value="sports">
+                                <label for="post-sports">Sports</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="news" name="category" value="news">
-                                <label for="news">News</label>
+                                <input type="checkbox" id="post-news" name="post-category" value="news">
+                                <label for="post-news">News</label>
                             </li>
                         </ul>
                         <div id="post-button-container">
@@ -173,33 +144,25 @@
                         <div class="activity-icons">
                             <div>
                                 <a href="/api/posts/{{.ID}}/like">
-                                    <i class="fa fa-thumbs-up icon">
-                                    </i>
-                                    {{.Likes}}
+                                    <i class="fa fa-thumbs-up icon"></i>{{.Likes}}
                                 </a>
                             </div>
                             <div>
                                 <a href="/api/posts/{{.ID}}/dislike">
-                                    <i class="fa fa-thumbs-down icon">
-                                    </i>
-                                    {{.Dislikes}}
+                                    <i class="fa fa-thumbs-down icon"></i>{{.Dislikes}}
                                 </a>
                             </div>
                             <div>
                                 <a href="/posts/{{.ID}}">
-                                    <i class="fa fa-comment icon"></i>
-                                    {{.Comments}}
+                                    <i class="fa fa-comment icon"></i>{{.Comments}}
                                 </a>
                             </div>
                         </div>
-                        <div class="post-profile-icon">
-                        </div>
+                        <div class="post-profile-icon"></div>
                     </div>
                 </div>
                 {{end}}
-                <footer class="footer">
-                    <!-- <button type="button" class="load-more-button">Load more</button> -->
-                </footer>
+                <footer class="footer"></footer>
             </div>
         </div>
     </div>
