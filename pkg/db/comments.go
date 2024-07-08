@@ -1,8 +1,10 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"learn.reboot01.com/git/hbudalam/forum/pkg/structs"
 )
@@ -73,11 +75,47 @@ func AddCommentInteraction(commentID int, username string, kind int) error {
 		return errors.New("invalid interaction kind")
 	}
 
-	_, err := db.Exec("INSERT INTO CommentInteractions (CommentID, username, Kind) VALUES ($1, $2, $3) ON CONFLICT (CommentID, username) DO UPDATE SET Kind = $3", commentID, username, kind)
+	var existingKind int
+	err := db.QueryRow("SELECT Kind FROM CommentInteractions WHERE CommentID = ? AND Username = ?", commentID, username).Scan(&existingKind)
 	if err != nil {
-		return err
+		if err == sql.ErrNoRows {
+			// No existing interaction, insert a new one
+			_, err = db.Exec(
+				"INSERT INTO CommentInteractions (CommentID, Username, Kind) VALUES (?, ?, ?)",
+				commentID, username, kind,
+			)
+			if err != nil {
+				log.Printf("InsertCommentInteraction error: %s", err)
+				return err
+			}
+		} else {
+			// Some other error occurred
+			log.Printf("Query error: %s", err)
+			return err
+		}
+	} else {
+		// Existing interaction found, update it if necessary
+		if existingKind != kind {
+			_, err = db.Exec(
+				"UPDATE CommentInteractions SET Kind = ? WHERE CommentID = ? AND Username = ?",
+				kind, commentID, username,
+			)
+			if err != nil {
+				log.Printf("UpdateCommentInteraction error: %s", err)
+				return err
+			}
+		} else {
+			// If the interaction is the same, delete it
+			_, err = db.Exec(
+				"DELETE FROM CommentInteractions WHERE CommentID = ? AND Username = ?",
+				commentID, username,
+			)
+			if err != nil {
+				log.Printf("DeleteCommentInteraction error: %s", err)
+				return err
+			}
+		}
 	}
-
 	return nil
 }
 
