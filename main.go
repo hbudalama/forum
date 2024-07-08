@@ -41,6 +41,7 @@ func main() {
 	mux.HandleFunc("/filter-posts", server.FilterPostsHandler) 
 	mux.HandleFunc("/most-liked", server.MostLikedPostsHandler)
 	mux.HandleFunc("/newest", server.NewestPostsHandler)
+	mux.HandleFunc("/Mylikedposts", server.MyLikedPostsHandler)
 	
 	log.Println("Serving on http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)
