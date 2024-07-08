@@ -1,4 +1,4 @@
-function logoutHandler(e){
+function logoutHandler(e) {
     fetch('/logout', {
         method: 'DELETE',
         headers: {
@@ -22,8 +22,8 @@ function prepareFrame(e) {
     ifrm.style.transform = "translate(-50%, -50%)";
     ifrm.style.backgroundColor = "white";
     ifrm.style.zIndex = 101;
-    ifrm.style.border = "1px solid #ccc"; 
-    ifrm.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)"; 
+    ifrm.style.border = "1px solid #ccc";
+    ifrm.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
     document.body.appendChild(ifrm);
 }
 
@@ -68,15 +68,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 criteria: selectedCriteria
             }),
         })
-        .then(response => response.json())
-        .then(data => {
-            const mainContent = document.querySelector('.main-content');
-            mainContent.innerHTML = ''; // Clear current posts
+            .then(response => response.json())
+            .then(data => {
+                const mainContent = document.querySelector('.main-content');
+                mainContent.innerHTML = ''; // Clear current posts
 
-            data.posts.forEach(post => {
-                const postElement = document.createElement('div');
-                postElement.classList.add('post');
-                postElement.innerHTML = `
+                data.posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post');
+                    postElement.innerHTML = `
                     <div class="post-row">
                         <div class="user-profile">
                             <img src="/static/images/user.png">
@@ -114,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="post-profile-icon"></div>
                     </div>
                 `;
-                mainContent.appendChild(postElement);
-            });
-        })
-        .catch(error => console.log('Error fetching filtered posts:', error));
+                    mainContent.appendChild(postElement);
+                });
+            })
+            .catch(error => console.log('Error fetching filtered posts:', error));
     }
 });
 
@@ -140,3 +140,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    var myPostsCheckbox = document.getElementById('Mylikedposts');
+    if (myPostsCheckbox) {
+        myPostsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                window.location.href = '/Mylikedposts';
+            } else {
+                window.location.href = '/';
+            }
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    var myPostsCheckbox = document.getElementById('myPosts');
+    if (myPostsCheckbox) {
+        myPostsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                window.location.href = '/myPosts';
+            } else {
+                window.location.href = '/';
+            }
+        });
+    }
+});
+
+

@@ -100,31 +100,31 @@ func Interact(post int, username string, interaction int) error {
 	return nil
 }
 
-func GetPost(postID int) (structs.Post, error) {
-	var post structs.Post
+// func GetPost(postID int) (structs.Post, error) {
+// 	var post structs.Post
 
-	row := db.QueryRow("SELECT PostID, Title, Content, CreatedDate, username FROM Post WHERE PostID = $1", postID)
-	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username)
-	if err != nil {
-		return post, err
-	}
+// 	row := db.QueryRow("SELECT PostID, Title, Content, CreatedDate, username FROM Post WHERE PostID = $1", postID)
+// 	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username)
+// 	if err != nil {
+// 		return post, err
+// 	}
 
-	rows, err := db.Query("SELECT CategoryName FROM Category c INNER JOIN PostCategory pc ON c.CategoryID = pc.CategoryID WHERE pc.PostID = $1", postID)
-	if err != nil {
-		return post, err
-	}
-	defer rows.Close()
+// 	rows, err := db.Query("SELECT CategoryName FROM Category c INNER JOIN PostCategory pc ON c.CategoryID = pc.CategoryID WHERE pc.PostID = $1", postID)
+// 	if err != nil {
+// 		return post, err
+// 	}
+// 	defer rows.Close()
 
-	for rows.Next() {
-		var category string
-		if err := rows.Scan(&category); err != nil {
-			return post, err
-		}
-		post.Categories = append(post.Categories, category)
-	}
+// 	for rows.Next() {
+// 		var category string
+// 		if err := rows.Scan(&category); err != nil {
+// 			return post, err
+// 		}
+// 		post.Categories = append(post.Categories, category)
+// 	}
 
-	return post, nil
-}
+// 	return post, nil
+// }
 
 func GetPostsByUser(username string) ([]structs.Post, error) {
 	var posts []structs.Post
@@ -415,4 +415,65 @@ func GetMostLikedPosts() ([]structs.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func GetLikedPostsByUser(username string) ([]structs.Post, error) {
+    var posts []structs.Post
+
+    rows, err := db.Query(`
+        SELECT p.PostID, p.Title, p.Content, p.CreatedDate, p.username
+        FROM Post p
+        INNER JOIN Interaction i ON p.PostID = i.PostID
+        WHERE i.username = $1 AND i.Kind = 1
+    `, username)
+    if err != nil {
+        return posts, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var post structs.Post
+        if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username); err != nil {
+            return posts, err
+        }
+        posts = append(posts, post)
+    }
+
+    return posts, rows.Err()
+}
+
+func GetPost(postID int) (structs.Post, error) {
+	var post structs.Post
+
+	row := db.QueryRow(`
+		SELECT 
+			p.PostID, p.Title, p.Content, p.CreatedDate, p.username,
+			IFNULL(likes.likes, 0) as likes, 
+			IFNULL(dislikes.dislikes, 0) as dislikes
+		FROM Post p
+		LEFT JOIN (SELECT PostID, COUNT(*) as likes FROM Interaction WHERE Kind = 1 GROUP BY PostID) likes 
+		ON p.PostID = likes.PostID
+		LEFT JOIN (SELECT PostID, COUNT(*) as dislikes FROM Interaction WHERE Kind = 0 GROUP BY PostID) dislikes 
+		ON p.PostID = dislikes.PostID
+		WHERE p.PostID = $1`, postID)
+	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.CreatedDate, &post.Username, &post.Likes, &post.Dislikes)
+	if err != nil {
+		return post, err
+	}
+
+	rows, err := db.Query("SELECT CategoryName FROM Category c INNER JOIN PostCategory pc ON c.CategoryID = pc.CategoryID WHERE pc.PostID = $1", postID)
+	if err != nil {
+		return post, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var category string
+		if err := rows.Scan(&category); err != nil {
+			return post, err
+		}
+		post.Categories = append(post.Categories, category)
+	}
+
+	return post, nil
 }
