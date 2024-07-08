@@ -120,3 +120,23 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(error => console.log('Error fetching filtered posts:', error));
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Event listener for most liked filter
+    document.getElementById('mostLiked').addEventListener('change', function () {
+        if (this.checked) {
+            window.location.href = '/most-liked';
+        } else {
+            window.location.href = '/';
+        }
+    });
+
+    // Event listener for newest filter
+    document.getElementById('newest').addEventListener('change', function () {
+        if (this.checked) {
+            window.location.href = '/newest';
+        } else {
+            window.location.href = '/';
+        }
+    });
+});

@@ -715,3 +715,87 @@ func FilterPostsHandler(w http.ResponseWriter, r *http.Request) {
 		Error500Handler(w, r)
 	}
 }
+
+func MostLikedPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if !MethodsGuard(w, r, "GET") {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	posts, err := db.GetMostLikedPosts()
+	if err != nil {
+		Error500Handler(w, r)
+		return
+	}
+
+	ctx := structs.HomeContext{
+		Posts: posts,
+	}
+
+	if LoginGuard(w, r) {
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			token := cookie.Value
+			session, err := db.GetSession(token)
+			if err == nil {
+				ctx.LoggedInUser = &session.User
+			}
+		}
+	}
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	err = tmpl.Execute(w, ctx)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+}
+
+func NewestPostsHandler(w http.ResponseWriter, r *http.Request) {
+	if !MethodsGuard(w, r, "GET") {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	posts, err := db.GetNewestPosts()
+	if err != nil {
+		Error500Handler(w, r)
+		return
+	}
+
+	ctx := structs.HomeContext{
+		Posts: posts,
+	}
+
+	if LoginGuard(w, r) {
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			token := cookie.Value
+			session, err := db.GetSession(token)
+			if err == nil {
+				ctx.LoggedInUser = &session.User
+			}
+		}
+	}
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "index.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	err = tmpl.Execute(w, ctx)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+}

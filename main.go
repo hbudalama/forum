@@ -38,7 +38,9 @@ func main() {
 	mux.HandleFunc("/api/comments/{id}/like",server.LikeCommentHandler)
 	mux.HandleFunc("/api/comments/{id}/dislike",server.DislikeCommentHandler)
 	mux.HandleFunc("/myPosts",server.MyPostsHandler)
-	mux.Handle("/filter-posts", http.HandlerFunc(server.FilterPostsHandler)) 
+	mux.HandleFunc("/filter-posts", server.FilterPostsHandler) 
+	mux.HandleFunc("/most-liked", server.MostLikedPostsHandler)
+	mux.HandleFunc("/newest", server.NewestPostsHandler)
 	
 	log.Println("Serving on http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)
