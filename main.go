@@ -35,6 +35,7 @@ func main() {
 	mux.HandleFunc("/logout", server.LogoutHandler)                      // ✅
 	mux.HandleFunc("/error404",server.Error404Handler)
 	mux.HandleFunc("/error500",server.Error500Handler)
+	mux.HandleFunc("/error400",server.Error400Handler)
 	mux.HandleFunc("/api/comments/{id}/like",server.LikeCommentHandler)
 	mux.HandleFunc("/api/comments/{id}/dislike",server.DislikeCommentHandler)
 	mux.HandleFunc("/myPosts",server.MyPostsHandler)

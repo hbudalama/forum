@@ -31,6 +31,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
 		http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -41,26 +42,32 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	if username == "" {
 		http.Error(w, `{"reason": "Username is required"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 	if email == "" {
 		http.Error(w, `{"reason": "Email is required"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 	if !validEmail(email) {
 		http.Error(w, `{"reason": "Invalid email format"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 	if password == "" {
 		http.Error(w, `{"reason": "Password is required"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 	if !validatePassword(password) {
 		http.Error(w, `{"reason": "Password must be at least 8 characters long"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 	if password != confirmPassword {
 		http.Error(w, `{"reason": "Passwords do not match"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -71,6 +78,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if exists {
 		http.Error(w, `{"reason": "Username already taken"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -81,6 +89,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if emailExists {
 		http.Error(w, `{"reason": "Email already taken"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -93,6 +102,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errMsg := fmt.Sprintf(`{"reason": "%s"}`, err.Error())
 		http.Error(w, errMsg, http.StatusBadRequest)
+		Error400Handler(w, r)
 		println(err.Error())
 		return
 	}
@@ -114,6 +124,7 @@ func AddLikesHandler(w http.ResponseWriter, r *http.Request) {
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -152,6 +163,7 @@ func AddDislikesHandler(w http.ResponseWriter, r *http.Request) {
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -394,11 +406,13 @@ func CommentsHandler(w http.ResponseWriter, r *http.Request) {
 		postID, err := strconv.Atoi(postIDStr)
 		if err != nil {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			Error400Handler(w, r)
 			return
 		}
 		comment := r.FormValue("comment")
 		if strings.TrimSpace(comment) == "" {
 			http.Error(w, "Comment cannot be empty", http.StatusBadRequest)
+			Error400Handler(w, r)
 			return
 		}
 		cookie, err := r.Cookie("session_token")
@@ -432,6 +446,7 @@ func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -522,6 +537,26 @@ func Error500Handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+func Error400Handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	tmpl, err := template.ParseFiles(filepath.Join("pages", "error400.html"))
+	if err != nil {
+		log.Printf("can't parse the template: %s\n", err.Error())
+		Error500Handler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("can't execute the template: %s\n", err.Error())
+		http.Error(w, "Bad Request Server Error Error400Handler", http.StatusBadRequest)
+	}
+}
+
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -533,6 +568,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	commentID, err := strconv.Atoi(commentIDStr)
 	if err != nil {
 		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -572,6 +608,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	commentID, err := strconv.Atoi(commentIDStr)
 	if err != nil {
 		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -645,6 +682,7 @@ func FilterPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&filterData); err != nil {
 		http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
+		Error400Handler(w, r)
 		return
 	}
 
@@ -867,6 +905,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
     postID, err := strconv.Atoi(postIDStr)
     if err != nil {
         http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		Error400Handler(w, r)
         return
     }
 
@@ -954,16 +993,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
         }
         if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
             http.Error(w, `{"reason": "Invalid request"}`, http.StatusBadRequest)
+			Error400Handler(w, r)
             return
         }
         username := strings.TrimSpace(requestData.Username)
         password := strings.TrimSpace(requestData.Password)
         if username == "" {
             http.Error(w, `{"reason": "Username is required"}`, http.StatusBadRequest)
+			Error400Handler(w, r)
             return
         }
         if password == "" {
             http.Error(w, `{"reason": "Password is required"}`, http.StatusBadRequest)
+			Error400Handler(w, r)
             return
         }
 
