@@ -76,17 +76,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('myPosts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/myPosts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
+// document.addEventListener('DOMContentLoaded', function () {
+//     var myPostsCheckbox = document.getElementById('myPosts');
+//     if (myPostsCheckbox) {
+//         myPostsCheckbox.addEventListener('change', function () {
+//             if (this.checked) {
+//                 window.location.href = '/myPosts';
+//             } else {
+//                 window.location.href = '/';
+//             }
+//         });
+//     }
 
     var myLikedPostsCheckbox = document.getElementById('Mylikedposts');
     if (myLikedPostsCheckbox) {
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
     //         window.location.href = '/';
     //     }
     // });
-});
+// });
 
 function validateForm() {
     var checkboxes = document.querySelectorAll('input[name="post-category"]:checked');
@@ -169,29 +169,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('Mylikedposts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/Mylikedposts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     var myPostsCheckbox = document.getElementById('Mylikedposts');
+//     if (myPostsCheckbox) {
+//         myPostsCheckbox.addEventListener('change', function () {
+//             if (this.checked) {
+//                 window.location.href = '/Mylikedposts';
+//             } else {
+//                 window.location.href = '/';
+//             }
+//         });
+//     }
+// });
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    var myPostsCheckbox = document.getElementById('myPosts');
-    if (myPostsCheckbox) {
-        myPostsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                window.location.href = '/myPosts';
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     var myPostsCheckbox = document.getElementById('myPosts');
+//     if (myPostsCheckbox) {
+//         myPostsCheckbox.addEventListener('change', function () {
+//             if (this.checked) {
+//                 window.location.href = '/myPosts';
+//             } else {
+//                 window.location.href = '/';
+//             }
+//         });
+//     }
+// });
