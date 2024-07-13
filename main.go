@@ -47,11 +47,11 @@ func main() {
 	mux.HandleFunc("/auth/google/login", server.GoogleLoginHandler)
 	mux.HandleFunc("/auth/google/callback", server.GoogleCallbackHandler)
 
+	log.Println("Serving on http://localhost" + port)
+
 	err := http.ListenAndServe(port, mux)
 
 	if err != nil {
 		log.Fatal("Error starting server:", err)
-	} else {
-		log.Println("Serving on http://localhost" + port)
 	}
 }
