@@ -17,17 +17,17 @@ type Post struct {
 	Interactions []Interaction
 	Likes        int
 	Dislikes     int
-	Comments int
+	Comments     int
 }
 
 type Comment struct {
-    ID           int
-    Content      string
-    CreatedDate  time.Time
-    PostID       int
-    Username     string
-    Likes        int
-    Dislikes     int
+	ID          int
+	Content     string
+	CreatedDate time.Time
+	PostID      int
+	Username    string
+	Likes       int
+	Dislikes    int
 }
 
 type Interaction struct {
