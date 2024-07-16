@@ -130,12 +130,11 @@ input:not(:checked)+label:hover {
     transition-timing-function: var(--ease, ease);
 
     outline: 2px solid transparent;
-    anchor-default: var(--active, --choice-1);
+    /* anchor-default: var(--active, --choice-1); */
     inset: 0 anchor(var(--active) right) 0 anchor(var(--active) left);
 }
 
 #button-container:has(:focus-visible)::after {
-
     outline-color: rgb(0, 0, 0);
 }
 

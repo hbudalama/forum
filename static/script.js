@@ -44,19 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({ username, password }),
         })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '/';
-            } else {
-                return response.json().then(data => {
-                    throw new Error(data.reason || "Unknown error");
-                });
-            }
-        })
-        .catch(error => {
-            loginError.textContent = "An error occurred: " + error.message;
-            loginError.style.display = 'block';
-        });
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.reason || "Unknown error");
+                    });
+                }
+            })
+            .catch(error => {
+                loginError.textContent = "An error occurred: " + error.message;
+                loginError.style.display = 'block';
+            });
     });
 
     registerField.addEventListener('submit', (e) => {
@@ -93,19 +93,19 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify(requestData),
         })
-        .then(response => {
-            if (response.ok) {
-                alert("Please log in");
-                window.location.href = '/login';
-            } else {
-                return response.json().then(data => {
-                    throw new Error(data.reason || "Unknown error");
-                });
-            }
-        })
-        .catch(error => {
-            registerError.textContent = "An error occurred: " + error.message;
-            registerError.style.display = 'block';
-        });
+            .then(response => {
+                if (response.ok) {
+                    alert("Please log in");
+                    window.location.href = '/login';
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.reason || "Unknown error");
+                    });
+                }
+            })
+            .catch(error => {
+                registerError.textContent = "An error occurred: " + error.message;
+                registerError.style.display = 'block';
+            });
     });
 });
