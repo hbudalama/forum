@@ -41,12 +41,6 @@ func main() {
 	mux.HandleFunc("/newest", server.NewestPostsHandler)
 	mux.HandleFunc("/Mylikedposts", server.MyLikedPostsHandler)
 
-	mux.HandleFunc("/auth/github/login", server.GitHubLoginHandler)
-	mux.HandleFunc("/auth/github/callback", server.GitHubCallbackHandler)
-
-	mux.HandleFunc("/auth/google/login", server.GoogleLoginHandler)
-	mux.HandleFunc("/auth/google/callback", server.GoogleCallbackHandler)
-
 	log.Println("Serving on http://localhost" + port)
 
 	err := http.ListenAndServe(port, mux)
