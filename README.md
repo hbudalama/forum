@@ -15,7 +15,7 @@ To run this application locally, you’ll need:
 	•	A web browser to access the forum.
 
 1.	Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/forum.git
+```bash
+    git clone https://github.com/hbudalama/forum.git
     cd forum
-    ```
+```
