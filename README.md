@@ -19,3 +19,8 @@ To run this application locally, you’ll need:
     git clone https://github.com/hbudalama/forum.git
     cd forum
 ```
+
+2. Run the application:
+```bash
+	go run main.go
+```
